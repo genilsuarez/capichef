@@ -392,6 +392,39 @@ export function gameReducer(state, action) {
       // On level 1, all ingredients are new
       const initialSeen = [...availableIngredients];
 
+      // practice_math: skip recipes, go straight to math challenge
+      if (gameMode === 'practice_math') {
+        const cfg = config || {};
+        const mathOps = cfg.mathOps && cfg.mathOps.length > 0 ? cfg.mathOps : undefined;
+        const mathMaxValue = cfg.mathMaxValue ?? 20;
+        const mathMaxTable = cfg.mathMaxTable ?? 10;
+        const mathLevel = cfg.mathLevel ?? 'kids';
+        const challenge = generateMathChallenge(1, mathOps, mathMaxValue, mathMaxTable, mathLevel);
+        return {
+          ...initialState,
+          screen: 'mathChallenge',
+          gameMode,
+          level: 1,
+          lives: 3,
+          maxErrors,
+          coins: 0,
+          combo: 0,
+          bestCombo: 0,
+          highScore: state.highScore,
+          bestLevel: state.bestLevel,
+          gameStartTime: Date.now(),
+          currentRecipe: recipe,
+          availableIngredients,
+          newIngredientsThisSession: initialSeen,
+          newIngredientsForLevel: initialSeen,
+          currentMathChallenge: challenge,
+          mathChallengesTotal: 1,
+          capibaraState: 'thinking',
+          isFirstPlaythrough: state.isFirstPlaythrough,
+          _config: config,
+        };
+      }
+
       return {
         ...initialState,
         screen: 'playing',
@@ -594,6 +627,28 @@ export function gameReducer(state, action) {
       const isCorrect = state.currentMathChallenge &&
         selectedAnswer === state.currentMathChallenge.correctAnswer;
 
+      // practice_math: loop de desafíos sin recetas
+      if (state.gameMode === 'practice_math') {
+        const cfg = state._config || {};
+        const mathOps = cfg.mathOps && cfg.mathOps.length > 0 ? cfg.mathOps : undefined;
+        const mathMaxValue = cfg.mathMaxValue ?? 20;
+        const mathMaxTable = cfg.mathMaxTable ?? 10;
+        const mathLevel = cfg.mathLevel ?? 'kids';
+        const nextChallenge = generateMathChallenge(state.level, mathOps, mathMaxValue, mathMaxTable, mathLevel);
+        const mathBonus = isCorrect ? 5 * state.level : 0;
+        return {
+          ...state,
+          screen: 'mathChallenge',
+          currentMathChallenge: nextChallenge,
+          capibaraState: 'thinking',
+          coins: state.coins + mathBonus,
+          mathChallengesCorrect: state.mathChallengesCorrect + (isCorrect ? 1 : 0),
+          mathChallengesTotal: state.mathChallengesTotal + 1,
+          lastMathCoins: mathBonus,
+          speechBubbleMessage: isCorrect ? getRandomPhrase(SPEECH_MATH_CORRECT) : null,
+        };
+      }
+
       if (isCorrect) {
         const mathBonus = 5 * state.level;
         const stateWithBonus = {
@@ -614,12 +669,35 @@ export function gameReducer(state, action) {
     }
 
     case 'MATH_TIMEOUT': {
-      // Tratar como respuesta incorrecta — avanzar sin bonus
+      if (state.gameMode === 'practice_math') {
+        const cfg = state._config || {};
+        const mathOps = cfg.mathOps && cfg.mathOps.length > 0 ? cfg.mathOps : undefined;
+        const nextChallenge = generateMathChallenge(state.level, mathOps, cfg.mathMaxValue ?? 20, cfg.mathMaxTable ?? 10, cfg.mathLevel ?? 'kids');
+        return {
+          ...state,
+          screen: 'mathChallenge',
+          currentMathChallenge: nextChallenge,
+          capibaraState: 'thinking',
+          mathChallengesTotal: state.mathChallengesTotal + 1,
+          lastMathCoins: 0,
+        };
+      }
       return advanceToNextLevel(state);
     }
 
     case 'MATH_SKIP': {
-      // Skip without penalty or bonus — advance to next level
+      if (state.gameMode === 'practice_math') {
+        const cfg = state._config || {};
+        const mathOps = cfg.mathOps && cfg.mathOps.length > 0 ? cfg.mathOps : undefined;
+        const nextChallenge = generateMathChallenge(state.level, mathOps, cfg.mathMaxValue ?? 20, cfg.mathMaxTable ?? 10, cfg.mathLevel ?? 'kids');
+        return {
+          ...state,
+          screen: 'mathChallenge',
+          currentMathChallenge: nextChallenge,
+          capibaraState: 'thinking',
+          mathChallengesTotal: state.mathChallengesTotal + 1,
+        };
+      }
       return advanceToNextLevel(state);
     }
 

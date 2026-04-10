@@ -91,8 +91,7 @@ const GameOver = ({
         {/* Modo badge */}
         {gameMode !== 'classic' && (
           <p className="text-xs font-bold text-amber-500 mb-3">
-            {gameMode === 'practice' ? '📚 Modo Práctica' : '⚡ Contra Reloj'}
-            {gameMode === 'speedrun' && timePenalty > 0 && ` · +${timePenalty}s penalización`}
+            {gameMode === 'practice' ? '🍳 Práctica Recetas' : gameMode === 'practice_math' ? '🧮 Práctica Matemáticas' : ''}
           </p>
         )}
 

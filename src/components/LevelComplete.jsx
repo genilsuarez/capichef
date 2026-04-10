@@ -130,7 +130,12 @@ const LevelComplete = ({ coinsBreakdown, level, isPerfect, gameMode = 'classic',
 
         {gameMode === 'practice' && (
           <p className="text-xs text-amber-400 font-semibold mb-3">
-            📚 Modo Práctica — las monedas no se guardan
+            🍳 Modo Práctica Recetas — las monedas no se guardan
+          </p>
+        )}
+        {gameMode === 'practice_math' && (
+          <p className="text-xs text-amber-400 font-semibold mb-3">
+            🧮 Modo Práctica Matemáticas
           </p>
         )}
 

@@ -439,9 +439,7 @@ const App = () => {
             challenge={state.currentMathChallenge}
             level={state.level}
             gameMode={state.gameMode || 'classic'}
-            mathTimerSeconds={state.gameMode === 'speedrun'
-              ? Math.max(10, (appState.config.mathTimerSeconds ?? 20) - 5)
-              : (appState.config.mathTimerSeconds ?? 20)}
+            mathTimerSeconds={appState.config.mathTimerSeconds ?? 20}
             showSkipAfterSeconds={appState.config.difficulty === 'easy' ? 0 : 5}
             mathBonus={5 * state.level}
             selectedSkin={appState.profile.selectedSkin}

@@ -90,16 +90,18 @@ const StartScreen = ({ highScore, bestLevel = 0, totalCoins = 0, playerName, sel
               style={{ background: '#0EA5E9', '--btn-shadow-color': '#0369a1' }}
               onClick={() => onStart('practice')}
             >
-              <span className="text-2xl">📚</span>
+              <span className="text-2xl">🍳</span>
               <span className="text-base font-black">Práctica</span>
+              <span className="text-[10px] opacity-80">Recetas</span>
             </button>
             <button
               className="btn-candy flex-1 py-4 text-white rounded-2xl flex flex-col items-center gap-1.5"
-              style={{ background: '#F43F5E', '--btn-shadow-color': '#be123c' }}
-              onClick={() => onStart('speedrun')}
+              style={{ background: '#8B5CF6', '--btn-shadow-color': '#6d28d9' }}
+              onClick={() => onStart('practice_math')}
             >
-              <span className="text-2xl">⚡</span>
-              <span className="text-base font-black">Contra Reloj</span>
+              <span className="text-2xl">🧮</span>
+              <span className="text-base font-black">Práctica</span>
+              <span className="text-[10px] opacity-80">Matemáticas</span>
             </button>
           </div>
         </div>

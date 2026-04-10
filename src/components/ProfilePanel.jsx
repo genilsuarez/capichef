@@ -222,7 +222,7 @@ const ProfilePanel = ({ profile, history, onClose, onSkinChange, isOpen }) => {
             history && history.length > 0 ? (
               <div className="space-y-2">
                 {history.map((entry, idx) => {
-                  const modeEmoji = entry.mode === 'practice' ? '📚' : entry.mode === 'speedrun' ? '⚡' : '🍳';
+                  const modeEmoji = entry.mode === 'practice' ? '🍳' : entry.mode === 'practice_math' ? '🧮' : '🏆';
                   const duration = entry.durationSeconds
                     ? entry.durationSeconds >= 60
                       ? `${Math.floor(entry.durationSeconds / 60)}m ${entry.durationSeconds % 60}s`

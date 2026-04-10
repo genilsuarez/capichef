@@ -12,7 +12,7 @@ const HUD = ({ lives, coins, level, gameMode, isPaused, onPause, onExit, timePen
     </span>
   ));
 
-  const modeBadge = gameMode === 'practice' ? '📚' : gameMode === 'speedrun' ? '⚡' : null;
+  const modeBadge = gameMode === 'practice' ? '🍳' : gameMode === 'practice_math' ? '🧮' : null;
 
   return (
     <>
