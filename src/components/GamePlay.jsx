@@ -7,9 +7,7 @@ import Capibara from './Capibara';
 import RecipePanel from './RecipePanel';
 import IngredientPanel from './IngredientPanel';
 import ComboDisplay from './ComboDisplay';
-import TutorialTooltip from './TutorialTooltip';
 import RecipeAnnounce from './RecipeAnnounce';
-import { INGREDIENT_POOL } from '../state/recipes.js';
 
 const GamePlay = ({ gameState, gameDispatch, selectedSkin = 'classic', config = {}, onExitToMenu }) => {
   const {
@@ -35,9 +33,6 @@ const GamePlay = ({ gameState, gameDispatch, selectedSkin = 'classic', config = 
     gameDispatch({ type: 'RESET_TIMER' });
     setShowAnnounce(false);
   }, [gameDispatch]);
-
-  const showTutorialTooltip =
-    !showAnnounce && gameState.isFirstPlaythrough && level === 1 && ingredientProgress === 0;
 
   const handleIngredientClick = useCallback(
     (ingredient) => {
@@ -90,17 +85,7 @@ const GamePlay = ({ gameState, gameDispatch, selectedSkin = 'classic', config = 
           />
         )}
 
-        {(() => {
-          const firstEmoji = showTutorialTooltip && currentRecipe ? currentRecipe.ingredients[0] : null;
-          const poolItem = firstEmoji ? INGREDIENT_POOL.find((i) => i.emoji === firstEmoji) : null;
-          return (
-            <TutorialTooltip
-              isVisible={showTutorialTooltip}
-              ingredientName={poolItem?.name || ''}
-              ingredientEmoji={firstEmoji || ''}
-            />
-          );
-        })()}
+        {/* TutorialTooltip eliminado — la guía visual en RecipePanel es suficiente */}
 
         <IngredientPanel
           availableIngredients={availableIngredients}
