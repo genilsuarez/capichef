@@ -21,6 +21,7 @@ export const DEFAULT_CONFIG = {
   mathMaxValue: 20,
   mathMaxTable: 10,
   mathTimerSeconds: 30,
+  hideIngredientNames: false,
   textLarge: false,
   highContrast: false,
   reducedAnimations: false,

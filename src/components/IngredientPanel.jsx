@@ -9,7 +9,7 @@ function getIngredientName(emoji) { return EMOJI_TO_NAME.get(emoji) || emoji; }
 
 const IngredientPanel = ({
   availableIngredients, onIngredientClick, lastClickResult,
-  lastClickedIngredient, hintIngredient, newIngredients = [],
+  lastClickedIngredient, hintIngredient, newIngredients = [], hideNames = false,
 }) => {
   const [disappearing, setDisappearing] = useState(new Set());
   const debounceRef = useRef(new Map());
@@ -51,7 +51,7 @@ const IngredientPanel = ({
   );
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 px-2 sm:px-4"
+    <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 gap-1.5 sm:gap-2 px-2 sm:px-4 w-full"
          role="group" aria-label="Panel de ingredientes">
       {visibleIngredients.map((ingredient) => {
         const name = getIngredientName(ingredient);
@@ -67,9 +67,9 @@ const IngredientPanel = ({
             aria-label={`Ingrediente: ${name}`}
             className={`
               relative flex flex-col items-center justify-center gap-0.5
-              min-w-[64px] min-h-[64px] w-full py-2
-              text-3xl sm:text-4xl
-              rounded-2xl bg-white border-2 border-amber-100
+              min-h-[56px] sm:min-h-[64px] w-full py-1.5 sm:py-2
+              text-2xl sm:text-4xl
+              rounded-xl sm:rounded-2xl bg-white border-2 border-amber-100
               cursor-pointer select-none shadow-sm
               transition-all duration-150 ease-out
               hover:scale-105 hover:shadow-md hover:border-amber-300
@@ -81,7 +81,9 @@ const IngredientPanel = ({
             style={{ touchAction: 'manipulation' }}
           >
             <span aria-hidden="true">{ingredient}</span>
-            <span className="text-[10px] sm:text-xs font-bold text-amber-700 leading-tight" aria-hidden="true">{name}</span>
+            {!hideNames && (
+              <span className="text-[9px] sm:text-xs font-bold text-amber-700 leading-tight" aria-hidden="true">{name}</span>
+            )}
             {isNew && (
               <span className="absolute -top-1.5 -right-1.5 text-xs bg-amber-100 rounded-full px-1 font-black shadow-sm animate-pop-in" aria-hidden="true">
                 🌟

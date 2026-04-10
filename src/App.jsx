@@ -403,6 +403,7 @@ const App = () => {
             gameState={state}
             gameDispatch={dispatch}
             selectedSkin={appState.profile.selectedSkin}
+            config={appState.config}
             onExitToMenu={() => {
               saveGameToHistory();
               dispatch({ type: 'EXIT_TO_MENU' });

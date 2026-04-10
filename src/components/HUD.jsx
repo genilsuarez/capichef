@@ -16,22 +16,22 @@ const HUD = ({ lives, coins, level, gameMode, isPaused, onPause, onExit, timePen
 
   return (
     <>
-      <div className="sticky top-0 z-30 flex items-center justify-between bg-white/95 px-3 py-2 border-b border-amber-100 select-none shadow-sm">
+      <div className="sticky top-0 z-30 flex items-center justify-between bg-white/95 px-3 py-1.5 sm:py-2 border-b border-amber-100 select-none shadow-sm">
         {/* Lives */}
         <div role="status" aria-label={`${lives} vidas restantes`} className="flex items-center gap-0.5">
           {hearts}
         </div>
 
         {/* Center: coins + level */}
-        <div className="flex items-center gap-2 text-sm font-extrabold text-amber-800">
-          <span className="bg-amber-50 rounded-full px-2.5 py-0.5" aria-label={`${coins} monedas`}>
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm font-extrabold text-amber-800">
+          <span className="bg-amber-50 rounded-full px-2 py-0.5" aria-label={`${coins} monedas`}>
             🪙 {coins}
           </span>
-          <span className="bg-amber-50 rounded-full px-2.5 py-0.5" aria-label={`Nivel ${level}`}>
+          <span className="bg-amber-50 rounded-full px-2 py-0.5" aria-label={`Nivel ${level}`}>
             ⭐ {level}
           </span>
           {modeBadge && (
-            <span className="bg-amber-50 rounded-full px-2 py-0.5 text-xs">{modeBadge}</span>
+            <span className="bg-amber-50 rounded-full px-1.5 py-0.5 text-xs">{modeBadge}</span>
           )}
           {gameMode === 'speedrun' && timePenalty > 0 && (
             <span className="text-xs text-red-500 font-black animate-shake">+{timePenalty}s</span>
@@ -41,7 +41,7 @@ const HUD = ({ lives, coins, level, gameMode, isPaused, onPause, onExit, timePen
         {/* Pause + Exit */}
         <div className="flex items-center gap-1">
           <button
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-amber-50 hover:bg-amber-100 active:scale-90 transition-all text-lg"
+            className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full bg-amber-50 hover:bg-amber-100 active:scale-90 transition-all text-base sm:text-lg"
             style={{ touchAction: 'manipulation' }}
             onClick={onPause}
             aria-label={isPaused ? 'Reanudar juego' : 'Pausar juego'}
@@ -49,7 +49,7 @@ const HUD = ({ lives, coins, level, gameMode, isPaused, onPause, onExit, timePen
             ⏸️
           </button>
           <button
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-amber-50 hover:bg-red-100 active:scale-90 transition-all text-lg"
+            className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full bg-amber-50 hover:bg-red-100 active:scale-90 transition-all text-base sm:text-lg"
             style={{ touchAction: 'manipulation' }}
             onClick={() => setShowExitConfirm(true)}
             aria-label="Salir al menú"

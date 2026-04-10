@@ -11,7 +11,7 @@ import TutorialTooltip from './TutorialTooltip';
 import RecipeAnnounce from './RecipeAnnounce';
 import { INGREDIENT_POOL } from '../state/recipes.js';
 
-const GamePlay = ({ gameState, gameDispatch, selectedSkin = 'classic', onExitToMenu }) => {
+const GamePlay = ({ gameState, gameDispatch, selectedSkin = 'classic', config = {}, onExitToMenu }) => {
   const {
     lives, coins, level, gameMode, currentRecipe, ingredientProgress,
     timeRemaining, errorsInCurrentDish, maxErrors, availableIngredients,
@@ -32,21 +32,16 @@ const GamePlay = ({ gameState, gameDispatch, selectedSkin = 'classic', onExitToM
   }, [level]);
 
   const handleAnnounceStart = useCallback(() => {
-    // Resetear el timer al tiempo completo de la receta cuando el niño cierra el anuncio
     gameDispatch({ type: 'RESET_TIMER' });
     setShowAnnounce(false);
   }, [gameDispatch]);
-
-  // Pausar el timer mientras el anuncio está visible
-  // (el timer en App.jsx solo corre cuando screen='playing' y timeRemaining>0,
-  //  así que bloqueamos los clicks de ingredientes hasta que el niño cierre el modal)
 
   const showTutorialTooltip =
     !showAnnounce && gameState.isFirstPlaythrough && level === 1 && ingredientProgress === 0;
 
   const handleIngredientClick = useCallback(
     (ingredient) => {
-      if (showAnnounce) return; // ignorar clicks mientras el anuncio está visible
+      if (showAnnounce) return;
       gameDispatch({ type: 'CLICK_INGREDIENT', payload: ingredient });
       if (gameState.isFirstPlaythrough) {
         const expected = gameState.currentRecipe?.ingredients[gameState.ingredientProgress];
@@ -71,7 +66,10 @@ const GamePlay = ({ gameState, gameDispatch, selectedSkin = 'classic', onExitToM
   const themeClass = `theme-${gameState.currentTheme || 'day'}`;
 
   return (
-    <div className={`min-h-screen flex flex-col animate-fade-in ${themeClass}`} style={!gameState.currentTheme || gameState.currentTheme === 'day' ? { background: '#FFF8EE' } : undefined}>
+    <div
+      className={`gameplay-layout animate-fade-in ${themeClass}`}
+      style={!gameState.currentTheme || gameState.currentTheme === 'day' ? { background: '#FFF8EE' } : undefined}
+    >
       <HUD
         lives={lives} coins={coins} level={level} gameMode={gameMode}
         isPaused={screenBeforePause != null} onPause={handlePause}
@@ -79,7 +77,7 @@ const GamePlay = ({ gameState, gameDispatch, selectedSkin = 'classic', onExitToM
         timePenalty={gameMode === 'speedrun' ? timePenaltySeconds : undefined}
       />
 
-      <div className="flex-1 flex flex-col items-center gap-3 py-3 px-2 sm:px-4 relative z-10">
+      <div className="gameplay-content relative z-10">
         <Capibara state={capibaraState} skin={selectedSkin} speechBubble={speechBubbleMessage} />
 
         {currentRecipe && (
@@ -110,6 +108,7 @@ const GamePlay = ({ gameState, gameDispatch, selectedSkin = 'classic', onExitToM
           lastClickedIngredient={lastClickedIngredient}
           hintIngredient={hintIngredient}
           newIngredients={newIngredientsForLevel}
+          hideNames={config.hideIngredientNames ?? false}
         />
 
         <ComboDisplay combo={combo} milestone={currentComboMilestone} />
@@ -120,7 +119,6 @@ const GamePlay = ({ gameState, gameDispatch, selectedSkin = 'classic', onExitToM
         </div>
       </div>
 
-      {/* Anuncio de receta — bloquea interacción hasta que el niño lo cierra */}
       {showAnnounce && currentRecipe && (
         <RecipeAnnounce
           recipe={currentRecipe}
