@@ -1,0 +1,486 @@
+# Plan de Implementación: CapiChef 🦫👨‍🍳
+
+## Resumen
+
+Implementación incremental de CapiChef como React SPA (Vite + Tailwind CSS). Cada tarea construye sobre las anteriores, integrando el componente educativo de matemáticas en el flujo principal del juego. Se cubren todos los requisitos (1-28) y las 19 propiedades de correctitud del documento de diseño.
+
+## Tareas
+
+- [x] 1. Scaffold del proyecto y configuración base
+  - [x] 1.1 Inicializar proyecto con Vite + React y configurar Tailwind CSS
+    - Crear `package.json`, `vite.config.js`, `tailwind.config.js`, `postcss.config.js`, `index.html`
+    - Crear estructura de carpetas: `src/components/`, `src/state/`, `src/hooks/`, `src/services/`, `src/utils/`, `src/constants/`
+    - _Requisitos: 15.1, 15.2_
+  - [x] 1.2 Crear `src/index.css` con imports de Tailwind y todos los keyframes CSS
+    - Implementar los 10 keyframes: breathing, bounce, jump, shake, fadeDown, blink, glow, fadeIn, slideUp, popIn
+    - _Requisitos: 9.1_
+  - [x] 1.3 Crear `src/main.jsx` con render básico de App
+    - _Requisitos: 15.2_
+
+- [x] 2. Sistema de estado, recetas y desafíos matemáticos
+  - [x] 2.1 Crear `src/state/recipes.js` con pool de ingredientes, recetas fijas y generación aleatoria
+    - Definir `INGREDIENT_POOL` (16 ingredientes con emoji y nombre)
+    - Definir `FIXED_RECIPES` para niveles 1-5 con ingredientes en orden y tiempos
+    - Implementar `generateRandomRecipe(level, previousRecipe)` para niveles 6+ (5-7 ingredientes, 10s, sin repetir ingredientes del nivel anterior)
+    - Implementar `generateDistractors(recipeIngredients, count)` para completar hasta 10 ingredientes en panel
+    - Implementar `shuffleArray(array)` para mezclar ingredientes
+    - _Requisitos: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
+  - [x] 2.2 Crear `src/state/mathChallenges.js` con generación de desafíos matemáticos
+    - Implementar `generateMathChallenge(level)` que escala dificultad: sumas niveles 1-2 (operandos 1-10), restas niveles 3-4 (operandos 1-20, resultado ≥ 0), multiplicaciones niveles 5-6 (operandos 1-10), mezcla niveles 7+ (sumas/restas 1-50, multiplicaciones 1-12)
+    - Implementar `generateWrongOptions(correctAnswer)` que genera 3 opciones incorrectas cercanas al resultado (±1 a ±5), sin negativos, sin duplicados
+    - Incluir emojis temáticos de cocina aleatorios en cada desafío
+    - _Requisitos: 16.2, 16.3, 16.7, 16.10_
+  - [x] 2.3 Crear `src/state/gameReducer.js` con estado inicial, reducer completo y funciones de cálculo
+    - Definir `initialState` con todos los campos del GameState de design.md: screen, gameMode, level, lives, maxErrors, coins, combo, bestCombo, highScore, dishesCompleted, gameStartTime, currentRecipe, ingredientProgress, errorsInCurrentDish, consecutiveErrorsWithoutHit, timeRemaining, availableIngredients, newIngredientsThisSession, timeBonusApplied, consecutiveTimerDeaths, capibaraState, lastClickResult, lastClickedIngredient, coinsEarnedThisLevel, currentTheme, speechBubbleMessage, currentComboMilestone, timePenaltySeconds, isFirstPlaythrough, mathChallengesCorrect, mathChallengesTotal, currentMathChallenge, pendingAchievements, screenBeforePause
+    - Implementar `calculateCoins(level, timeUsed, totalTime, errors, combo)` con base, speedBonus, perfectBonus, comboMultiplier y floor
+    - Implementar `getComboMultiplier(combo)`: 0-1→×1.0, 2-3→×1.5, 4-5→×2.0, 6+→×3.0
+    - Implementar acciones del reducer:
+      - `START_GAME`: resetea todo, screen='playing', level=1, lives=3
+      - `CLICK_INGREDIENT`: evalúa ingrediente correcto/incorrecto/fuera de orden, maneja 3 errores → pierde vida, completa receta → screen='levelComplete'
+      - `TIMER_TICK`: decrementa timeRemaining en 1 (solo si screen='playing')
+      - `TIME_UP`: pierde vida o game over, reinicia mismo nivel
+      - `NEXT_LEVEL`: avanza nivel, genera nueva receta, recupera vida en múltiplos de 5
+      - `SHOW_MATH`: genera desafío matemático con `generateMathChallenge(level)`, screen='mathChallenge', capibaraState='thinking', incrementa mathChallengesTotal
+      - `ANSWER_MATH`: evalúa respuesta, si correcta otorga bonus 5×nivel y incrementa mathChallengesCorrect, luego despacha lógica de NEXT_LEVEL
+      - `MATH_TIMEOUT`: trata como respuesta incorrecta, avanza al siguiente nivel sin bonus
+      - `RESTART`: vuelve a start screen, preserva highScore si es mayor
+    - Incluir lógica de: selección de distractores, shuffle del panel, combo, recuperación de vidas cada 5 niveles, validación de ingrediente, actualización de bestCombo, highScore
+    - _Requisitos: 2.1-2.7, 3.7, 4.3-4.6, 5.1-5.5, 6.1-6.4, 7.1-7.8, 12.4, 13.1-13.6, 16.1, 16.4-16.6_
+
+- [x] 3. Checkpoint — Verificar lógica de estado
+  - Asegurar que todas las funciones de `recipes.js`, `mathChallenges.js` y `gameReducer.js` están correctamente implementadas. Preguntar al usuario si surgen dudas.
+
+- [x] 4. Componente App y Pantalla de Inicio
+  - [x] 4.1 Crear `src/App.jsx` con useReducer y router de pantallas
+    - Usar `useReducer(gameReducer, initialState)` para gestionar estado global
+    - Renderizar componente según `state.screen`: 'onboarding' → OnboardingScreen, 'start' → StartScreen, 'playing' → GamePlay, 'paused' → PauseOverlay, 'levelComplete' → LevelComplete, 'mathChallenge' → MathChallenge, 'gameOver' → GameOver
+    - Implementar `useEffect` para `setInterval` del timer (tick cada 100ms) cuando screen='playing'
+    - _Requisitos: 1.1-1.6, 13.1, 15.2_
+  - [x] 4.2 Crear `src/components/StartScreen.jsx`
+    - Logo "🦫👨‍🍳 CapiChef" centrado con animación fade-in + scale
+    - Capibara en estado idle con animación breathing
+    - Botón "¡A cocinar!" que despacha START_GAME
+    - Mostrar high score de la sesión actual (0 si primera partida)
+    - Instrucción: "Clickea los ingredientes en orden para completar la receta"
+    - _Requisitos: 1.1, 1.2, 1.7, 1.8_
+
+- [x] 5. Componentes de gameplay — HUD, Capibara, RecipePanel
+  - [x] 5.1 Crear `src/components/HUD.jsx`
+    - Vidas: ❤️ por vida restante, 🖤 por vida perdida (siempre 3 slots)
+    - Monedas: "💰 [cantidad]"
+    - Nivel: "📊 Nivel [N]"
+    - Posición sticky superior con justify-between
+    - `role="status"` en contador de vidas para screen readers
+    - _Requisitos: 7.2, 7.4, 10.1, 10.2, 14.6_
+  - [x] 5.2 Crear `src/components/Capibara.jsx` con los 6 estados visuales
+    - idle: 🦫👨‍🍳 "Listo para cocinar" — animación breathing (scale 1.0↔1.05, 2s loop)
+    - cooking: 🦫🔪 "¡Cocinando!" — animación bounce 0.4s
+    - done: 🦫✨ "¡Delicioso!" — animación jump 0.5s + sparkles
+    - error: 🦫😰 "¡Eso no va!" — animación shake 0.3s
+    - thinking: 🦫🤔 "¡Piensa rápido!" — animación breathing 2s loop (usado en MathChallenge)
+    - gameover: 😢🦫 "Se quemó la cocina..." — animación fadeDown 0.5s
+    - _Requisitos: 8.1, 8.2, 8.3, 8.4, 8.5, 16.8_
+  - [x] 5.3 Crear `src/components/RecipePanel.jsx`
+    - Nombre de la receta en texto
+    - Secuencia de ingredientes con flechas (→)
+    - Progreso: ✅ completados, ➡️ actual (pulsando), ⬜ pendientes
+    - Barra de timer con colores dinámicos: verde >50%, amarillo 25-50%, rojo <25% con blink
+    - Contador de errores: "⚠️ N/3"
+    - `role="status"` en el timer
+    - _Requisitos: 3.1-3.6, 10.3, 14.5_
+
+- [x] 6. Panel de ingredientes y combo
+  - [x] 6.1 Crear `src/components/IngredientPanel.jsx`
+    - Grid de 10 ingredientes clickeables, tamaño mínimo 48×48px
+    - Hover: scale(1.15) con transición 150ms
+    - Click correcto: flash verde (bg-green-400) → scale(0) → desaparece (200ms)
+    - Click incorrecto: shake horizontal (translateX ±5px, 3 ciclos, 300ms) + flash rojo (bg-red-400)
+    - Ingredientes ya usados no se renderizan
+    - Debounce visual de 200ms para evitar doble-click
+    - `aria-label` descriptivo en cada botón (ej: "Ingrediente: Tomate")
+    - _Requisitos: 2.1, 2.3, 2.8, 9.3, 9.4, 10.4, 10.5, 14.1, 14.2, 14.4_
+  - [x] 6.2 Crear `src/components/ComboDisplay.jsx`
+    - Muestra multiplicador de combo cuando es > ×1.0
+    - Animación popIn al aparecer + glow continuo
+    - `aria-live="polite"` para accesibilidad
+    - _Requisitos: 6.3, 9.5, 14.7_
+
+- [x] 7. Pantalla de gameplay completa
+  - [x] 7.1 Crear `src/components/GamePlay.jsx` integrando todos los componentes
+    - Integrar HUD, Capibara, RecipePanel, IngredientPanel y ComboDisplay
+    - Conectar clicks de ingredientes con dispatch de CLICK_INGREDIENT
+    - Implementar transiciones entre niveles (fade out 300ms / fade in 300ms)
+    - _Requisitos: 2.1-2.7, 9.2, 10.1-10.5_
+
+- [x] 8. Checkpoint — Verificar gameplay básico
+  - Asegurar que el flujo Start → Gameplay funciona: selección de ingredientes, timer, errores, pérdida de vida, combo. Preguntar al usuario si surgen dudas.
+
+- [x] 9. Overlays de Level Complete y Game Over
+  - [x] 9.1 Crear `src/components/LevelComplete.jsx`
+    - Overlay semi-transparente sobre Gameplay con animación fadeIn 300ms
+    - Título "✨ ¡Plato listo!" con animación de celebración
+    - Desglose de monedas: base, bonus velocidad, bonus perfecto, multiplicador combo, total
+    - Botón "Siguiente nivel →" que despacha `SHOW_MATH` (NO `NEXT_LEVEL`) para iniciar el flujo: LevelComplete → MathChallenge → Gameplay
+    - _Requisitos: 1.3, 1.4, 5.6, 11.1-11.4, 16.1_
+  - [x] 9.2 Crear `src/components/GameOver.jsx`
+    - Overlay oscuro con animación fadeIn 500ms
+    - Capibara triste: 😢🦫 (estado gameover)
+    - Estadísticas finales: nivel alcanzado, monedas totales, mejor racha (combo máximo), platos completados
+    - Estadísticas de matemáticas: "🧠 Matemáticas: X/Y" (mathChallengesCorrect / mathChallengesTotal)
+    - Botón "Reintentar" que despacha RESTART
+    - _Requisitos: 1.5, 1.6, 12.1-12.4, 16.9_
+
+- [x] 10. Componente de Desafío Matemático
+  - [x] 10.1 Crear `src/components/MathChallenge.jsx`
+    - Capibara en estado "thinking" (🦫🤔 "¡Piensa rápido!") con animación breathing
+    - Operación matemática con emojis de cocina (ej: "🍅 7 + 🧀 5 = ?")
+    - 4 botones de respuesta con las opciones generadas
+    - Timer visual de 10 segundos con barra de progreso
+    - Feedback visual: respuesta correcta → flash verde + "🧠 ¡Correcto!" + avanza tras 1s; respuesta incorrecta → flash rojo + shake + muestra respuesta correcta en verde + "❌ La respuesta era [X]" + avanza tras 2s
+    - Timeout → trata como incorrecta, avanza sin bonus
+    - `aria-label` descriptivo en cada botón de respuesta
+    - `role="status"` en el feedback de resultado
+    - Despacha `ANSWER_MATH` con la respuesta seleccionada o `MATH_TIMEOUT` al agotar tiempo
+    - _Requisitos: 16.1-16.11_
+
+- [x] 11. Checkpoint — Verificar flujo completo
+  - Asegurar que el flujo completo funciona: Start → Gameplay → Level Complete → Math Challenge → Gameplay (siguiente nivel) → ... → Game Over → Reintentar. Verificar cálculo de monedas, combos, vidas, estadísticas de matemáticas. Preguntar al usuario si surgen dudas.
+  - [x] 11.1 Crear `src/state/appReducer.js` con estado persistente
+    - Definir `initialAppState`: { profile, config, history, isFirstLaunch }
+    - Implementar todas las acciones AppAction: COMPLETE_ONBOARDING, UPDATE_CONFIG, RESET_CONFIG, CHANGE_SKIN, UNLOCK_ACHIEVEMENT, UNLOCK_SKIN, UPDATE_STATS, ADD_HISTORY_ENTRY, LOAD_PERSISTED_STATE
+    - _Requisitos: 23.6, 23.7, 24.1, 24.4, 25.1, 28.1_
+  - [x] 11.2 Crear custom hooks en `src/hooks/`
+    - `useTimer.js` — encapsula setInterval cada 100ms, pausa cuando screen !== 'playing', cleanup en unmount, callback onExpire
+    - `useHaptics.js` — wrapper de Vibration API con patterns (correct: 50ms, error: [100,50,100], loseLife: 300ms, achievement: [50,50,50,50,200]), graceful degradation si API no disponible
+    - `useAchievements.js` — evalúa logros tras cada cambio de gameState, despacha UNLOCK_ACHIEVEMENT si hay nuevos
+    - `useLocalStorage.js` — hook genérico para persistencia con serialización/deserialización y try/catch
+    - `useTheme.js` — calcula tema visual según nivel: 1-5 'day', 6-10 'night', 11-15 'underwater', 16+ 'space'
+    - _Requisitos: 3.2, 20.1, 25.4, 27.1_
+  - [x] 11.3 Crear servicios en `src/services/`
+    - `storageService.js` — load/save/clear para config, profile, history con try/catch, SCHEMA_VERSION=1, migraciones automáticas
+    - `clipboardService.js` — genera texto de compartir y copia al portapapeles con Clipboard API y fallback graceful
+    - `analyticsService.js` — stub de tracking de eventos (game_start, level_complete, game_over, achievement_unlocked)
+    - _Requisitos: 23.6, 23.7, 28.3_
+  - [x] 11.4 Crear utilidades en `src/utils/`
+    - `timerUtils.js` — getTimerColor(remaining, total), formatTime(deciseconds)
+    - `mathUtils.js` — clamp(value, min, max), randomInt(min, max), shuffleArray(arr)
+    - `difficultyUtils.js` — applyDifficultyToRecipe(recipe, config), applyDifficultyToMath(challenge, config)
+    - _Requisitos: 3.4, 22.1, 23.2_
+  - [x] 11.5 Crear constantes en `src/constants/`
+    - `gameConstants.js` — INITIAL_LIVES, MAX_LIVES, ERROR_THRESHOLD_BY_DIFFICULTY, COMBO_MILESTONES, THEME_THRESHOLDS, TIMER_INTERVAL_MS
+    - `achievementDefinitions.js` — array de los 12 logros con id, nombre, emoji, condición de desbloqueo
+    - `skinDefinitions.js` — array de las 6 skins con id, emoji, nombre, condición de desbloqueo
+    - `mathConstants.js` — rangos de operandos por nivel, emojis de cocina disponibles, plantillas narrativas
+    - _Requisitos: 25.1, 24.3, 16.3_
+  - [x] 11.6 Crear archivos AGENT.md por carpeta con convenciones de design.md
+    - `src/components/AGENT.md` — functional components, Tailwind, JSDoc props, no localStorage directo
+    - `src/state/AGENT.md` — funciones puras, inmutabilidad, separación gameReducer/appReducer
+    - `src/hooks/AGENT.md` — prefijo "use", single concern, cleanup en useEffect
+    - `src/services/AGENT.md` — módulos puros, try/catch, no lanzar excepciones
+    - `src/utils/AGENT.md` — funciones puras, named exports, JSDoc
+    - `src/constants/AGENT.md` — valores inmutables, no importar desde state/components
+
+
+- [x] 12. Panel de Configuración
+  - [x] 12.1 Crear `src/state/config.js` con lógica de configuración y localStorage
+    - Definir estructura de configuración: dificultad (fácil/normal/difícil), focoMatemático (todas/sumas/restas/multiplicaciones/mixto), accesibilidad (textoGrande, altoContraste), velocidadAnimaciones (normal/reducida)
+    - Implementar `loadConfig()` que lee de localStorage "capichef_config" y retorna defaults si no existe
+    - Implementar `saveConfig(config)` que persiste en localStorage
+    - Implementar `resetConfig()` que vuelve a valores por defecto
+    - _Requisitos: 23.6, 23.7_
+  - [x] 12.2 Crear `src/components/ConfigPanel.jsx`
+    - Modal sobre Pantalla_Inicio con botón "⚙️ Configurar"
+    - Selector de dificultad (3 opciones) con preview descriptivo en tiempo real
+    - Selector de foco matemático (5 opciones)
+    - Toggles de accesibilidad: texto grande (125%) y alto contraste
+    - Toggle de velocidad de animaciones: normal / reducida (50% duración)
+    - Botones "Guardar" y "Restablecer"
+    - _Requisitos: 23.1, 23.2, 23.3, 23.4, 23.5, 23.6, 23.8_
+  - [x] 12.3 Integrar configuración en el reducer y componentes
+    - Actualizar `gameReducer.js` para leer configuración y aplicar reglas de dificultad (timer ±s, máximo errores)
+    - Actualizar `mathChallenges.js` para respetar foco matemático seleccionado
+    - Aplicar clase CSS de alto contraste y texto grande al contenedor raíz
+    - Aplicar multiplicador de velocidad de animaciones via CSS custom property
+    - _Requisitos: 23.2, 23.3, 23.4, 23.5, 23.7_
+
+- [x] 13. Perfil del Jugador y Personalización
+  - [x] 13.1 Crear pantalla de bienvenida y `src/state/profile.js`
+    - Pantalla de bienvenida "¿Cómo te llamas?" con campo de texto y botón "¡Empezar!" — solo se muestra si no hay datos en localStorage
+    - Implementar `loadProfile()`, `saveProfile(profile)` con localStorage "capichef_profile"
+    - Estructura del perfil: nombre, skinSeleccionada, skinsDesbloqueadas, logrosObtenidos, estadísticasHistóricas (mejorNivel, monedasTotales, platosCompletados, precisiónMatemática, mejorCombo)
+    - _Requisitos: 24.1, 24.4_
+  - [x] 13.2 Crear `src/components/ProfilePanel.jsx` y sistema de skins
+    - Panel_Perfil accesible desde botón "📊 Mi Perfil" en Pantalla_Inicio
+    - Mostrar nombre con avatar del capibara actual, estadísticas históricas acumuladas
+    - Grid de 6 skins: Chef Clásico (default), Chef Elegante, Chef Mexicano, Chef Japonés, Chef Espacial (nivel 10), Chef Legendario (combo x10)
+    - Skins bloqueadas en gris con condición de desbloqueo
+    - Selector de skin integrado en Panel_Configuración
+    - _Requisitos: 24.2, 24.3, 24.5_
+  - [x] 13.3 Integrar perfil en el flujo del juego
+    - Mostrar "¡Hola, [Nombre]! 🦫" en Pantalla_Inicio con fadeIn
+    - Actualizar Capibara.jsx para usar la skin seleccionada en todos los estados
+    - Actualizar estadísticas históricas en localStorage al final de cada partida
+    - Verificar desbloqueo de skins al alcanzar nivel 10 o combo x10
+    - _Requisitos: 24.2, 24.3, 24.4_
+
+- [x] 14. Sistema de Logros (Achievements)
+  - [x] 14.1 Crear `src/state/achievements.js` con definición y evaluación de logros
+    - Definir los 12 logros con: id, emoji, nombre, descripción, condición de desbloqueo
+    - Implementar `evaluateAchievements(gameState, profile)` que retorna array de logros recién desbloqueados
+    - Implementar `loadAchievements()` y `saveAchievements(achievements)` con localStorage
+    - _Requisitos: 25.1, 25.4_
+  - [x] 14.2 Crear `src/components/AchievementToast.jsx` y grid de logros en perfil
+    - Notificación toast en esquina superior derecha con animación slideIn, desaparece tras 3s
+    - Agregar keyframe slideIn al index.css
+    - Grid de logros en Panel_Perfil: 3 columnas, desbloqueados en color, bloqueados en gris con 🔒
+    - _Requisitos: 25.2, 25.3_
+  - [x] 14.3 Integrar evaluación de logros en el flujo del juego
+    - Evaluar logros después de: fin de nivel, respuesta matemática, game over
+    - Disparar toast para cada logro nuevo desbloqueado
+    - Persistir logros en localStorage inmediatamente al desbloquear
+    - Integrar vibración háptica de celebración al desbloquear logro (si Req 27 implementado)
+    - _Requisitos: 25.4_
+
+- [x] 15. Modos de Juego Alternativos
+  - [x] 15.1 Actualizar Pantalla_Inicio con selector de modo y actualizar reducer
+    - 3 botones: "🎮 Jugar" (clásico), "📚 Modo Práctica", "⚡ Modo Contra Reloj"
+    - Agregar `gameMode: 'classic' | 'practice' | 'speedrun'` al estado del reducer
+    - Agregar acción `START_GAME` con payload de modo seleccionado
+    - _Requisitos: 26.1, 26.4_
+  - [x] 15.2 Implementar reglas de Modo Práctica
+    - Timer estático en verde (sin cuenta regresiva)
+    - Sin pérdida de vidas por errores ni timeout
+    - Pista glow en ingrediente correcto después de cada error (sin esperar 2 consecutivos)
+    - Desafíos matemáticos SÍ aparecen entre niveles
+    - Score visible pero no se guarda como high score
+    - Badge "📚 Modo Práctica" en HUD
+    - _Requisito: 26.2_
+  - [x] 15.3 Implementar reglas de Modo Contra Reloj
+    - Timer reducido: tiempo base -3s (mínimo 5s)
+    - Sin pérdida de vidas — errores/timeout suman 3s a "tiempo de penalización"
+    - Agregar `penaltyTime` al estado del reducer
+    - Monedas ganadas ×2
+    - Timer de desafíos matemáticos reducido a 7s
+    - Badge "⚡ Contra Reloj" en HUD
+    - _Requisito: 26.3_
+  - [x] 15.4 Adaptar overlays al modo activo
+    - LevelComplete: adaptar contenido según modo
+    - GameOver: en Práctica no mostrar "Vidas perdidas", en Contra Reloj mostrar "Tiempo de penalización"
+    - _Requisito: 26.5_
+
+- [x] 16. Vibración Háptica y Sistema de Pausa
+  - [x] 16.1 Implementar vibración háptica con Vibration API
+    - Crear `src/hooks/useHaptics.js` como custom hook que encapsula navigator.vibrate con patterns: `vibrateCorrect()` (50ms), `vibrateError()` ([100,50,100]), `vibrateLoseLife()` (300ms), `vibrateAchievement()` ([50,50,50,50,200])
+    - Graceful degradation: verificar `navigator.vibrate` antes de llamar
+    - Integrar llamadas en los dispatch correspondientes del gameplay
+    - _Requisito: 27.1_
+  - [x] 16.2 Crear `src/components/PauseOverlay.jsx` y sistema de pausa
+    - Botón "⏸️" en HUD visible durante gameplay
+    - Overlay semi-transparente con "⏸️ Pausa" y opciones: "Continuar ▶️", "Configuración ⚙️", "Salir al menú 🏠"
+    - Timer se detiene durante pausa
+    - Agregar `screenBeforePause` al estado del reducer y acciones `PAUSE_GAME` y `RESUME_GAME` (dos acciones separadas según design.md)
+    - Pausar automáticamente con `visibilitychange` event en mobile
+    - Confirmación al salir: "¿Seguro? Perderás el progreso de esta partida" con "Sí, salir" y "Cancelar"
+    - _Requisitos: 27.2, 27.3_
+
+- [x] 17. Historial de Partidas y Compartir
+  - [x] 17.1 Implementar historial en localStorage y sección en perfil
+    - Guardar últimas 5 partidas en localStorage "capichef_history": fecha, modo, nivel, monedas, precisión matemática, mejor combo, platos completados
+    - Agregar sección "📅 Últimas partidas" en Panel_Perfil con tarjetas compactas
+    - _Requisitos: 28.1, 28.2_
+  - [x] 17.2 Implementar botón compartir y comparación con partida anterior
+    - Botón "📤 Compartir resultado" en Overlay_GameOver que copia texto al portapapeles via Clipboard API con fallback graceful
+    - Texto: "¡Jugué CapiChef! 🦫👨‍🍳 Llegué al nivel [N], gané [X] monedas y respondí [Y]% de las matemáticas. ¿Puedes superarme?"
+    - Comparación con partida anterior: "⬆️ +N niveles vs tu última partida" o "⬇️ -N niveles"
+    - Guardar partida en historial al terminar (Game Over o salida desde pausa)
+    - _Requisitos: 28.3, 28.4_
+
+- [x] 18. Checkpoint — Verificar configuración, perfil, logros, modos y pausa
+  - Verificar flujo completo de configuración: abrir panel, cambiar dificultad, guardar, reiniciar app y verificar que se carga
+  - Verificar perfil: nombre, skins, estadísticas históricas acumuladas entre partidas
+  - Verificar logros: desbloqueo automático, toast, persistencia en localStorage
+  - Verificar Modo Práctica: sin timer, sin vidas, pistas después de cada error
+  - Verificar Modo Contra Reloj: timer reducido, penalización por errores, monedas ×2
+  - Verificar pausa: timer se detiene, opciones funcionan, confirmación al salir
+  - Verificar historial: últimas 5 partidas guardadas, compartir copia al portapapeles
+  - Verificar vibración háptica en dispositivo mobile (o simulador)
+  - Preguntar al usuario si surgen dudas
+
+- [x] 19. Testing automatizado — Configuración y tests de propiedades (PBT)
+  - [x] 19.1 Instalar dependencias de testing y configurar vitest
+    - Instalar: `fast-check`, `vitest`, `@testing-library/react`, `@testing-library/jest-dom`
+    - Configurar vitest en `vite.config.js` con entorno jsdom
+    - _Requisitos: 15.1_
+  - [ ]* 19.2 Tests de propiedades para el reducer — Propiedades 1-5
+    - **Propiedad 1: Restart resetea el estado completo** — Para cualquier GameState, RESTART produce estado inicial preservando highScore
+    - **Valida: Requisitos 1.6, 12.4**
+    - **Propiedad 2: Click en ingrediente correcto avanza el progreso** — Incrementa ingredientProgress, remueve ingrediente, capibaraState='cooking'
+    - **Valida: Requisitos 2.1, 2.2, 13.4**
+    - **Propiedad 3: Click en ingrediente incorrecto incrementa errores sin avanzar** — Incrementa errorsInCurrentDish, no modifica ingredientProgress, capibaraState='error'
+    - **Valida: Requisitos 2.3, 2.4, 2.5, 2.6, 13.5**
+    - **Propiedad 4: Color del timer según porcentaje** — Verde >50%, amarillo 25-50%, rojo <25%
+    - **Valida: Requisitos 3.4, 3.5, 3.6**
+    - **Propiedad 5: Pérdida de vida reinicia el nivel actual** — Decrementa lives, resetea errores y timer, mantiene receta, combo a 0
+    - **Valida: Requisitos 3.7, 6.2, 7.3**
+  - [ ]* 19.3 Tests de propiedades para recetas y panel — Propiedades 6-7
+    - **Propiedad 6: Generación de recetas aleatorias nivel 6+** — 5-7 ingredientes únicos, time=10, nombre correcto, diferente a receta anterior
+    - **Valida: Requisitos 4.3, 4.4**
+    - **Propiedad 7: Panel siempre contiene exactamente 10 ingredientes** — Receta + distractores = 10, sin duplicados
+    - **Valida: Requisito 4.5**
+  - [ ]* 19.4 Tests de propiedades para economía y combo — Propiedades 8-11
+    - **Propiedad 8: Cálculo de monedas por nivel** — base=10×nivel, speedBonus, perfectBonus, total=floor((base+bonuses)×multiplier)
+    - **Valida: Requisitos 5.1, 5.2, 5.3, 5.4**
+    - **Propiedad 9: Mapeo de multiplicador de combo** — 0-1→×1.0, 2-3→×1.5, 4-5→×2.0, 6+→×3.0
+    - **Valida: Requisito 5.5**
+    - **Propiedad 10: Combo se incrementa al completar nivel** — combo_nuevo = combo_anterior + 1
+    - **Valida: Requisito 6.1**
+    - **Propiedad 11: bestCombo es siempre el máximo** — bestCombo ≥ combo actual y ≥ bestCombo anterior
+    - **Valida: Requisito 6.4**
+  - [ ]* 19.5 Tests de propiedades para vidas y game over — Propiedades 12-16
+    - **Propiedad 12: Vidas=0 activa Game Over** — screen='gameOver', capibaraState='gameover', lives=0
+    - **Valida: Requisito 7.7**
+    - **Propiedad 13: Recuperación de vida en niveles múltiplos de 5** — lives < 3 → lives+1 al completar nivel ×5
+    - **Valida: Requisitos 7.5, 7.8**
+    - **Propiedad 14: Las vidas nunca exceden 3** — Para cualquier estado y acción, lives ≤ 3
+    - **Valida: Requisito 7.8**
+    - **Propiedad 15: High score se actualiza correctamente** — Si coins > highScore al Game Over, highScore = coins
+    - **Valida: Requisito 12.4**
+    - **Propiedad 16: TIMER_TICK decrementa en 1 décima** — timeRemaining = timeRemaining_anterior - 1
+    - **Valida: Requisito 13.6**
+  - [ ]* 19.6 Tests de propiedades para desafíos matemáticos — Propiedades 17-19
+    - **Propiedad 17: Generación de desafíos matemáticos válidos** — 4 opciones sin duplicados, 1 correcta, 3 incorrectas en rango ±5, todas ≥ 0
+    - **Valida: Requisitos 16.2, 16.7**
+    - **Propiedad 18: Escalado de dificultad matemática por nivel** — Niveles 1-2 sumas, 3-4 restas, 5-6 multiplicaciones, 7+ mezcla
+    - **Valida: Requisito 16.3**
+    - **Propiedad 19: Recompensa por respuesta matemática** — Correcta: +5×nivel coins y +1 mathChallengesCorrect; incorrecta/timeout: sin bonus
+    - **Valida: Requisitos 16.4, 16.5**
+
+- [ ] 20. Testing automatizado — Tests unitarios y de integración
+  - [ ]* 20.1 Tests unitarios de navegación y rendering
+    - Pantalla inicio muestra logo, botón "¡A cocinar!", high score, instrucciones
+    - Transiciones entre pantallas (start → playing → levelComplete → mathChallenge → gameOver)
+    - HUD muestra vidas/monedas/nivel correctamente
+    - RecipePanel muestra progreso de ingredientes y timer
+    - LevelComplete muestra desglose de monedas
+    - GameOver muestra estadísticas finales incluyendo "🧠 Matemáticas: X/Y"
+    - _Requisitos: 1.1-1.8, 10.1-10.5, 11.1-11.4, 12.1-12.4, 16.9_
+  - [ ]* 20.2 Tests unitarios del Capibara y accesibilidad
+    - Verificar los 6 estados visuales del Capibara (idle, cooking, done, error, thinking, gameover)
+    - Verificar aria-labels en botones de ingredientes
+    - Verificar role="status" en timer y contador de vidas
+    - Verificar aria-live="polite" en área de feedback
+    - Verificar tamaño mínimo 48×48px en botones
+    - _Requisitos: 8.1-8.5, 14.1-14.7, 16.8_
+  - [ ]* 20.3 Tests unitarios de recetas y pool de ingredientes
+    - Verificar 5 recetas fijas con ingredientes y tiempos correctos
+    - Verificar pool de 16 ingredientes
+    - Verificar generación de desafíos matemáticos por nivel
+    - _Requisitos: 4.1, 4.2, 16.2, 16.3_
+  - [ ]* 20.4 Tests de integración de flujos completos
+    - Partida completa nivel 1: Start → seleccionar ingredientes → Level Complete → Math Challenge → Nivel 2
+    - Pérdida de vida por timer: iniciar nivel, timeout, verificar reinicio
+    - Pérdida de vida por 3 errores: 3 clicks incorrectos, verificar reinicio
+    - Game Over completo: perder 3 vidas, verificar overlay con estadísticas y matemáticas
+    - Recuperación de vida: completar nivel 5 con 2 vidas, verificar recuperación a 3
+    - _Requisitos: 1.1-1.6, 2.1-2.6, 3.7, 7.3-7.7, 16.1-16.6_
+
+- [x] 21. Checkpoint testing — Verificar que todos los tests pasan
+  - Asegurar que todos los tests pasan y que la cobertura cubre los requisitos 1-16. Preguntar al usuario si surgen dudas.
+
+- [x] 22. Diseño responsive y mobile-first
+  - [x] 22.1 Configurar meta viewport y estilos globales mobile
+    - Agregar `<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">` en `index.html`
+    - Agregar `touch-action: manipulation` en todos los botones interactivos para eliminar delay de 300ms
+    - Agregar `user-select: none` en botones de ingredientes y elementos interactivos
+    - Agregar `overflow: hidden` en body durante Pantalla_Gameplay para evitar scroll en mobile
+    - _Requisitos: 17.3, 17.4, 17.8, 17.9_
+  - [x] 22.2 Implementar grid adaptativo y layout responsive en todos los componentes
+    - Panel_Ingredientes: grid 2 columnas en móvil (<640px), 4 en tablet, 5 en desktop usando Tailwind responsive prefixes
+    - HUD: texto compacto (solo emojis) en móvil, completo en desktop
+    - Panel_Receta: fuente reducida en pantallas pequeñas manteniendo legibilidad
+    - Panel_Matemático: botones de respuesta en grid 2×2 en móvil con tamaño mínimo 64×64px
+    - Overlays (NivelCompleto, GameOver): scrollables cuando contenido exceda altura en móvil
+    - Capibara y elementos visuales: escalar con unidades relativas (vw, vh, rem)
+    - _Requisitos: 17.1, 17.2, 17.5, 17.6, 17.7, 17.10_
+
+- [x] 23. Sistema de celebración y feedback emocional amplificado
+  - [x] 23.1 Implementar confeti CSS y animación de coins flying
+    - Crear efecto de lluvia de confeti con partículas CSS animadas (sin librerías) que se muestra durante 2s en Overlay_NivelCompleto SOLO cuando errores = 0 (plato perfecto)
+    - Crear animación "coins flying" donde monedas bonus vuelen hacia el contador del HUD al responder correctamente en Panel_Matemático
+    - Agregar keyframes necesarios: confetti-fall, coin-fly
+    - _Requisitos: 18.1, 18.4_
+  - [x] 23.2 Implementar mensajes especiales de combo y speech bubbles del capibara
+    - Mensajes de combo con animación popIn: combo 3 → "🔥 ¡Combo x3!", combo 6 → "⚡ ¡Imparable!", combo 10 → "👑 ¡Leyenda!"
+    - Speech bubbles aleatorias del Capibara como componente reutilizable: frases al inicio de nivel, al cometer errores, al acertar matemáticas
+    - Pool de frases por contexto (mínimo 3 por situación) seleccionadas aleatoriamente
+    - _Requisitos: 18.2, 18.3_
+
+- [x] 24. Integración temática de matemáticas con la cocina
+  - [x] 24.1 Actualizar MathChallenge.jsx con narrativa de cocina
+    - Presentar desafíos como "misiones de cocina" con texto narrativo: "¡El capibara necesita saber cuántos ingredientes usar!"
+    - Usar ingredientes de la receta actual o del pool como emojis en el enunciado: "Tienes 🍅7 tomates y añades 🍅5 más. ¿Cuántos tomates hay?"
+    - Nombrar operaciones según contexto: sumas = "¡Añadir ingredientes!", restas = "¡Usar ingredientes!", multiplicaciones = "¡Hacer porciones!"
+    - _Requisitos: 19.1, 19.2, 19.4_
+  - [x] 24.2 Implementar explicación del capibara al fallar matemáticas
+    - Al fallar, el Capibara muestra globo de diálogo con explicación simple: "¡7 + 5 = 12! Contemos juntos: 7, 8, 9, 10, 11, 12 🦫"
+    - Generar explicación dinámica según la operación (contar para sumas, restar paso a paso, tablas para multiplicaciones)
+    - _Requisito: 19.3_
+
+- [x] 25. Progresión visual y temas por nivel
+  - [x] 25.1 Implementar 4 temas CSS por rango de niveles
+    - Niveles 1-5: cocina de día (fondo amarillo cálido)
+    - Niveles 6-10: cocina de noche (fondo azul oscuro con estrellas CSS)
+    - Niveles 11-15: cocina bajo el agua (fondo azul claro con burbujas CSS animadas)
+    - Niveles 16+: cocina espacial (fondo negro con estrellas parpadeantes)
+    - Implementar como clases CSS que se aplican al contenedor principal según el nivel, sin librerías externas
+    - _Requisito: 20.1_
+  - [x] 25.2 Implementar mensaje de desbloqueo y badges de ingredientes nuevos
+    - Mostrar mensaje especial al alcanzar nivel múltiplo de 5: "🌟 ¡Nivel N desbloqueado! Entrando a la cocina [tema]..."
+    - Agregar badge "🌟 Nuevo" en ingredientes que aparecen por primera vez en la sesión (trackear ingredientes vistos en el estado)
+    - _Requisitos: 20.2, 20.3_
+
+- [x] 26. Onboarding y ayuda contextual
+  - [x] 26.1 Implementar tooltip de primer nivel y pista visual por errores
+    - En nivel 1 (primera vez), mostrar tooltip animado apuntando al primer ingrediente: "¡Toca este primero! 👆" — desaparece al primer click correcto
+    - Cuando el jugador tiene 2 errores consecutivos sin aciertos, el ingrediente correcto siguiente parpadea con animación glow 1s como pista sutil
+    - _Requisitos: 21.1, 21.2_
+  - [x] 26.2 Implementar botón "¿Cómo jugar?" en Pantalla_Inicio
+    - Botón "¿Cómo jugar? 📖" que abre un mini-tutorial de 3 pasos con animaciones simples
+    - No debe bloquear el inicio del juego (se puede cerrar en cualquier momento)
+    - Pasos: 1) "Mira la receta arriba", 2) "Toca los ingredientes en orden", 3) "¡Completa antes de que se acabe el tiempo!"
+    - _Requisito: 21.3_
+
+- [x] 27. Ritmo de juego balanceado
+  - [x] 27.1 Implementar dificultad adaptativa de tiempo
+    - Si el jugador pierde vida por timer en 2 niveles consecutivos, incrementar tiempo del siguiente nivel en +2s
+    - Máximo una vez por nivel, máximo +4s total acumulado
+    - Agregar al estado: consecutiveTimerDeaths, timeBonusApplied
+    - Actualizar reducer para trackear pérdidas consecutivas por timer y aplicar bonus de tiempo
+    - _Requisito: 22.1_
+  - [x] 27.2 Implementar botón "Continuar" en Panel_Matemático y récord en Pantalla_Inicio
+    - Botón "Continuar →" en Panel_Matemático visible solo DESPUÉS de 5 segundos (sin penalización ni bonus al usarlo)
+    - Agregar al estado: bestLevel (mejor nivel alcanzado en la sesión)
+    - Mostrar en Pantalla_Inicio: "⭐ Récord: Nivel N" junto al high score
+    - _Requisitos: 22.2, 22.3_
+
+- [x] 28. Checkpoint final completo — Verificar responsive, diversión y flujo
+  - Verificar que el juego funciona correctamente en móvil (simular con DevTools), tablet y desktop
+  - Verificar que los temas visuales cambian cada 5 niveles
+  - Verificar que el confeti aparece solo en platos perfectos
+  - Verificar que el onboarding funciona en nivel 1 y desaparece correctamente
+  - Verificar que la dificultad adaptativa de tiempo funciona tras 2 pérdidas consecutivas por timer
+  - Verificar que el botón "Continuar" aparece a los 5s en el Panel_Matemático
+  - Verificar que las speech bubbles del capibara se muestran en los contextos correctos
+  - Preguntar al usuario si surgen dudas
+
+## Notas
+
+- Las tareas marcadas con `*` son opcionales y pueden omitirse para un MVP más rápido
+- Cada tarea referencia los requisitos específicos que cubre para trazabilidad
+- Los checkpoints aseguran validación incremental
+- Los tests de propiedades validan las 19 propiedades universales de correctitud del diseño
+- Los tests unitarios validan ejemplos específicos y casos borde
+- El flujo correcto entre niveles es: LevelComplete → (SHOW_MATH) → MathChallenge → (ANSWER_MATH/MATH_TIMEOUT → NEXT_LEVEL) → Gameplay
+- Las tareas 22-27 cubren los requisitos 17-22 (responsive, diversión, integración temática, progresión visual, onboarding, ritmo balanceado)
+- Las tareas 12-17 cubren los requisitos 23-28 (configuración, perfil, logros, modos de juego, pausa/vibración, historial/compartir)
+- Se recomienda implementar las tareas 22 (responsive) y 26 (onboarding) antes de las tareas de celebración y temas visuales
