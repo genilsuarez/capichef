@@ -33,7 +33,7 @@ export const DEFAULT_CONFIG = {
 const DEFAULT_PROFILE = {
   name: '',
   selectedSkin: 'classic',
-  unlockedSkins: ['classic', 'elegant'],
+  unlockedSkins: ['classic', 'elegant', 'mexican', 'japanese'],
   unlockedAchievements: [],
   stats: {
     bestLevel: 0,
@@ -167,7 +167,7 @@ export function appReducer(state, action) {
 
     case 'ADD_HISTORY_ENTRY': {
       const newEntry = action.payload;
-      const updatedHistory = [newEntry, ...state.history].slice(0, 5);
+      const updatedHistory = [newEntry, ...state.history].slice(0, 10);
       return {
         ...state,
         history: updatedHistory,

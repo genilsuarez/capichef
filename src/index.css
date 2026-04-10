@@ -6,7 +6,13 @@
 
 body {
   font-family: 'Nunito', 'Segoe UI', system-ui, sans-serif;
-  background: #7C3AED; /* evita franja blanca antes de que React monte */
+  background: #FFF8EE; /* móvil: mismo color que app-shell */
+}
+
+@media (min-width: 768px) {
+  body {
+    background: #7C3AED; /* tablet/desktop: fondo morado visible detrás del marco */
+  }
 }
 
 /* ============================================
@@ -284,6 +290,8 @@ body.gameplay-active {
 
 /* ============================================
    App Shell — Phone-frame container for web
+   En móvil: full screen sin marco.
+   En tablet/desktop (≥768px): marco centrado con fondo decorativo.
    ============================================ */
 .app-shell {
   width: 100%;
@@ -293,7 +301,7 @@ body.gameplay-active {
   background: #FFF8EE;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .app-shell {
     max-width: 480px;
     min-height: 100vh;
@@ -301,12 +309,14 @@ body.gameplay-active {
     box-shadow:
       0 0 0 1px rgba(0,0,0,0.04),
       0 8px 40px rgba(0,0,0,0.12);
-    border-radius: 0;
   }
   .app-shell-bg {
     background: linear-gradient(135deg, #4C1D95 0%, #7C3AED 50%, #C026D3 100%);
     min-height: 100vh;
     min-height: 100dvh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
   }
 }
 

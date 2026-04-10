@@ -19,7 +19,7 @@ function pickRandom(arr) {
 const GameOver = ({
   level, coins, bestCombo, dishesCompleted, mathCorrect, mathTotal,
   gameMode = 'classic', timePenalty = 0, previousGame = null,
-  selectedSkin = 'classic', onRestart, onShare,
+  selectedSkin = 'classic', onRestart, onShare, onExitToMenu,
 }) => {
   const [shareLabel, setShareLabel] = useState('📤 Compartir');
   const frase = pickRandom(FRASES_GAMEOVER);
@@ -110,6 +110,13 @@ const GameOver = ({
             style={{ background: '#4ADE80', '--btn-shadow-color': '#16a34a', touchAction: 'manipulation' }}
             onClick={onRestart}
           >🔄 ¡Otra vez!</button>
+          {onExitToMenu && (
+            <button
+              className="w-full py-2.5 rounded-2xl font-bold text-sm text-amber-600 bg-amber-50 border border-amber-200 hover:bg-amber-100 active:scale-95 transition-all"
+              style={{ touchAction: 'manipulation' }}
+              onClick={onExitToMenu}
+            >🏠 Volver al menú</button>
+          )}
         </div>
         </div>
       </div>

@@ -26,10 +26,11 @@ describe('IngredientPanel — getIngredientName', () => {
 
   it('returns the emoji itself for unknown ingredients', () => {
     expect(getIngredientName('🍕')).toBe('🍕');
-    expect(getIngredientName('🌽')).toBe('🌽');
+    // 🌽 is now in the pool, so use a truly unknown emoji
+    expect(getIngredientName('🎸')).toBe('🎸');
   });
 
-  it('maps all 16 pool ingredients', () => {
+  it('maps all pool ingredients', () => {
     for (const { emoji, name } of INGREDIENT_POOL) {
       expect(getIngredientName(emoji)).toBe(name);
     }

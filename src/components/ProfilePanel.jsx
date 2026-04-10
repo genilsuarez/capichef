@@ -221,21 +221,38 @@ const ProfilePanel = ({ profile, history, onClose, onSkinChange, isOpen }) => {
           {activeTab === 'history' && (
             history && history.length > 0 ? (
               <div className="space-y-2">
-                {history.map((entry, idx) => (
-                  <div
-                    key={entry.id || idx}
-                    className="flex items-center justify-between bg-gray-50 rounded-lg p-3 text-xs text-gray-700"
-                  >
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-sm">Nivel {entry.levelReached}</span>
-                      <span className="text-gray-400">{entry.date}</span>
+                {history.map((entry, idx) => {
+                  const modeEmoji = entry.mode === 'practice' ? '📚' : entry.mode === 'speedrun' ? '⚡' : '🍳';
+                  const duration = entry.durationSeconds
+                    ? entry.durationSeconds >= 60
+                      ? `${Math.floor(entry.durationSeconds / 60)}m ${entry.durationSeconds % 60}s`
+                      : `${entry.durationSeconds}s`
+                    : null;
+                  return (
+                    <div
+                      key={entry.id || idx}
+                      className="bg-gray-50 rounded-xl p-3 text-xs text-gray-700"
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-base">{modeEmoji}</span>
+                          <span className="font-black text-sm text-amber-800">Nivel {entry.levelReached}</span>
+                        </div>
+                        <span className="text-gray-400 text-[10px]">{entry.date}</span>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <span className="bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full">🪙 {entry.coinsEarned}</span>
+                        <span className="bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full">🧠 {entry.mathAccuracy}%</span>
+                        {entry.bestCombo > 0 && (
+                          <span className="bg-orange-100 text-orange-700 font-bold px-2 py-0.5 rounded-full">🔥 ×{entry.bestCombo}</span>
+                        )}
+                        {duration && (
+                          <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded-full">⏱️ {duration}</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-3 text-right">
-                      <span>🪙 {entry.coinsEarned}</span>
-                      <span>🧠 {entry.mathAccuracy}%</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-gray-400">

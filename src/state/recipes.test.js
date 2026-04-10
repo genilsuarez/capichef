@@ -8,8 +8,8 @@ import {
 } from './recipes.js';
 
 describe('INGREDIENT_POOL', () => {
-  it('contains exactly 16 ingredients', () => {
-    expect(INGREDIENT_POOL).toHaveLength(16);
+  it('contains at least 16 ingredients', () => {
+    expect(INGREDIENT_POOL.length).toBeGreaterThanOrEqual(16);
   });
 
   it('each ingredient has emoji and name', () => {
@@ -23,7 +23,7 @@ describe('INGREDIENT_POOL', () => {
 
   it('has no duplicate emojis', () => {
     const emojis = INGREDIENT_POOL.map((i) => i.emoji);
-    expect(new Set(emojis).size).toBe(16);
+    expect(new Set(emojis).size).toBe(emojis.length);
   });
 });
 
@@ -115,9 +115,9 @@ describe('generateRandomRecipe', () => {
     expect(recipe.time).toBe(10);
   });
 
-  it('name follows "Especial del Chef #[level]" format', () => {
+  it('name includes the level number', () => {
     const recipe = generateRandomRecipe(7, null);
-    expect(recipe.name).toBe('Especial del Chef #7');
+    expect(recipe.name).toContain('#7');
   });
 
   it('ingredients are unique (no duplicates)', () => {

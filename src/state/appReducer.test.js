@@ -160,22 +160,22 @@ describe('appReducer', () => {
       expect(result.history[0]).toEqual(entry);
     });
 
-    it('keeps max 5 entries, dropping oldest', () => {
-      const entries = Array.from({ length: 5 }, (_, i) => ({
+    it('keeps max 10 entries, dropping oldest', () => {
+      const entries = Array.from({ length: 10 }, (_, i) => ({
         id: `entry-${i}`, date: `date-${i}`, mode: 'classic', levelReached: i + 1,
         coinsEarned: 100, mathAccuracy: 50, bestCombo: 1, dishesCompleted: i, durationSeconds: 60,
       }));
-      const stateWith5 = { ...initialAppState, history: entries };
+      const stateWith10 = { ...initialAppState, history: entries };
       const newEntry = { id: 'entry-new', date: 'date-new', mode: 'classic', levelReached: 10, coinsEarned: 500, mathAccuracy: 90, bestCombo: 5, dishesCompleted: 9, durationSeconds: 300 };
 
-      const result = appReducer(stateWith5, {
+      const result = appReducer(stateWith10, {
         type: 'ADD_HISTORY_ENTRY',
         payload: newEntry,
       });
-      expect(result.history).toHaveLength(5);
+      expect(result.history).toHaveLength(10);
       expect(result.history[0]).toEqual(newEntry);
-      // Oldest entry (entry-4) should be dropped
-      expect(result.history.map((e) => e.id)).not.toContain('entry-4');
+      // Oldest entry (entry-9) should be dropped
+      expect(result.history.map((e) => e.id)).not.toContain('entry-9');
     });
   });
 

@@ -47,7 +47,7 @@ const Star = ({ filled, size = 'text-4xl', delay = 0 }) => (
   </span>
 );
 
-const LevelComplete = ({ coinsBreakdown, level, isPerfect, gameMode = 'classic', onNext }) => {
+const LevelComplete = ({ coinsBreakdown, level, isPerfect, gameMode = 'classic', selectedSkin = 'classic', onNext }) => {
   const {
     base = 0,
     speedBonus = 0,
@@ -81,7 +81,7 @@ const LevelComplete = ({ coinsBreakdown, level, isPerfect, gameMode = 'classic',
 
         {/* Capibara celebrando */}
         <div className="mb-2">
-          <Capibara state="done" hideStateText />
+          <Capibara state="done" skin={selectedSkin} hideStateText />
         </div>
 
         {/* Título */}

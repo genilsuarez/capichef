@@ -106,12 +106,12 @@ export function saveHistory(history) {
 }
 
 /**
- * Add a single history entry, keeping max 5 entries (most recent first).
+ * Add a single history entry, keeping max 10 entries (most recent first).
  * @param {object} entry - GameHistoryEntry to add
  */
 export function addHistoryEntry(entry) {
   const history = loadHistory();
-  const updated = [entry, ...history].slice(0, 5);
+  const updated = [entry, ...history].slice(0, 10);
   saveHistory(updated);
 }
 

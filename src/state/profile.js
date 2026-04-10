@@ -9,7 +9,6 @@
  */
 
 import { loadProfile as storageLoadProfile, saveProfile as storageSaveProfile } from '../services/storageService';
-import { SKIN_DEFINITIONS } from '../constants/skinDefinitions';
 
 /**
  * Default player profile structure.
@@ -18,7 +17,7 @@ import { SKIN_DEFINITIONS } from '../constants/skinDefinitions';
 export const DEFAULT_PROFILE = {
   name: '',
   selectedSkin: 'classic',
-  unlockedSkins: ['classic', 'elegant'],
+  unlockedSkins: ['classic', 'elegant', 'mexican', 'japanese'],
   unlockedAchievements: [],
   stats: {
     bestLevel: 0,
@@ -50,9 +49,10 @@ export function loadProfile() {
       ...DEFAULT_PROFILE.stats,
       ...(stored.stats || {}),
     },
+    // Always include default unlocked skins + any previously earned ones
     unlockedSkins: Array.from(new Set([
+      ...DEFAULT_PROFILE.unlockedSkins,
       ...(stored.unlockedSkins || []),
-      ...SKIN_DEFINITIONS.filter(s => !s.isLockedByDefault).map(s => s.id),
     ])),
     unlockedAchievements: stored.unlockedAchievements || [],
   };

@@ -428,6 +428,7 @@ const App = () => {
             level={state.level}
             isPerfect={state.errorsInCurrentDish === 0}
             gameMode={state.gameMode || 'classic'}
+            selectedSkin={appState.profile.selectedSkin}
             onNext={() => dispatch({ type: 'SHOW_MATH' })}
           />
         );
@@ -471,6 +472,7 @@ const App = () => {
             previousGame={previousGame}
             selectedSkin={appState.profile.selectedSkin}
             onRestart={() => dispatch({ type: 'RESTART' })}
+            onExitToMenu={() => dispatch({ type: 'EXIT_TO_MENU' })}
             onShare={async () => {
               const text = generateShareText(state.level, state.coins, mathAcc);
               return await copyToClipboard(text);

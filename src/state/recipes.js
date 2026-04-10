@@ -8,7 +8,7 @@
  */
 
 /**
- * Pool de 16 ingredientes disponibles en el juego.
+ * Pool de 24 ingredientes disponibles en el juego.
  * Cada ingrediente tiene un emoji y un nombre descriptivo.
  * @type {{ emoji: string, name: string }[]}
  */
@@ -29,6 +29,14 @@ export const INGREDIENT_POOL = [
   { emoji: '🧄', name: 'Ajo' },
   { emoji: '🥕', name: 'Zanahoria' },
   { emoji: '🍗', name: 'Pollo' },
+  { emoji: '🥦', name: 'Brócoli' },
+  { emoji: '🍄', name: 'Champiñón' },
+  { emoji: '🫑', name: 'Pimiento' },
+  { emoji: '🥚', name: 'Huevo cocido' },
+  { emoji: '🧆', name: 'Falafel' },
+  { emoji: '🫘', name: 'Frijoles' },
+  { emoji: '🌽', name: 'Maíz' },
+  { emoji: '🍤', name: 'Camarón' },
 ];
 
 /**
@@ -80,6 +88,25 @@ export function shuffleArray(array) {
 }
 
 /**
+ * Nombres creativos para recetas aleatorias (niveles 6+).
+ * Se combinan con el número de nivel para variedad.
+ */
+const RANDOM_RECIPE_NAMES = [
+  'Sorpresa del Chef',
+  'Creación Especial',
+  'Plato Misterioso',
+  'Receta Secreta',
+  'Fusión Capibara',
+  'Delicias del Día',
+  'Invento del Chef',
+  'Plato Estrella',
+  'Mezcla Mágica',
+  'Obra Maestra',
+  'Festín Capibara',
+  'Combinación Épica',
+];
+
+/**
  * Genera una receta aleatoria para niveles 6+.
  * Selecciona entre 5 y 7 ingredientes únicos del pool, con 10s de tiempo.
  * Garantiza que los ingredientes no sean idénticos a los de la receta anterior.
@@ -109,8 +136,11 @@ export function generateRandomRecipe(level, previousRecipe) {
     areSameIngredients(ingredients, previousSet)
   );
 
+  const nameIndex = (level - 1) % RANDOM_RECIPE_NAMES.length;
+  const recipeName = `${RANDOM_RECIPE_NAMES[nameIndex]} #${level}`;
+
   return {
-    name: `Especial del Chef #${level}`,
+    name: recipeName,
     ingredients,
     time: 10,
   };

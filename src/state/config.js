@@ -22,16 +22,7 @@ const CONFIG_VERSION = 2;
 export function loadConfig() {
   const stored = storageLoadConfig();
   if (stored && typeof stored === 'object') {
-    // Si la versión es vieja o no existe, resetear a defaults (preservando cambios explícitos del usuario)
-    if (!stored._version || stored._version < CONFIG_VERSION) {
-      const migrated = { ...DEFAULT_CONFIG, ...stored, _version: CONFIG_VERSION };
-      // Para campos que cambiaron de default, solo aplicar el nuevo default si el usuario
-      // nunca lo cambió explícitamente (no podemos saberlo, así que reseteamos a defaults)
-      migrated.difficulty = DEFAULT_CONFIG.difficulty;
-      migrated.mathTimerSeconds = DEFAULT_CONFIG.mathTimerSeconds;
-      storageSaveConfig(migrated);
-      return migrated;
-    }
+    // Merge stored config with defaults (stored values take precedence)
     return { ...DEFAULT_CONFIG, ...stored };
   }
   return { ...DEFAULT_CONFIG };
