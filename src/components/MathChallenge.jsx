@@ -87,18 +87,12 @@ const MathChallenge = ({ challenge, level, gameMode, mathTimerSeconds = 10, show
     return () => clearTimeout(timer);
   }, [showSkipAfterSeconds, feedback]);
 
-  // Solo depende de timeLeft — no de feedback ni de onTimeout para evitar
-  // que el cleanup cancele el setTimeout cuando cambian en el mismo frame.
   useEffect(() => {
     if (timeLeft <= 0 && !timeoutFiredRef.current) {
       timeoutFiredRef.current = true;
       setFeedback({ selected: null, isCorrect: false, isTimeout: true });
-      // practice_math: esperar toque manual — no auto-avanzar
-      if (gameMode !== 'practice_math') {
-        advanceTimerRef.current = setTimeout(() => onTimeoutRef.current(), 2000);
-      }
     }
-  }, [timeLeft, gameMode]);
+  }, [timeLeft]);
 
   const handleAnswer = useCallback((answer) => {
     if (answeredRef.current || feedback) return;
@@ -106,15 +100,10 @@ const MathChallenge = ({ challenge, level, gameMode, mathTimerSeconds = 10, show
     const isCorrect = answer === challenge.correctAnswer;
     setFeedback({ selected: answer, isCorrect, isTimeout: false });
     if (isCorrect) {
-      // Mostrar modal de celebración; el avance ocurre cuando el niño toca "Seguir cocinando"
       setShowReward(true);
-    } else {
-      // practice_math: esperar toque manual — no auto-avanzar
-      if (gameMode !== 'practice_math') {
-        advanceTimerRef.current = setTimeout(() => onAnswerRef.current(answer), 2000);
-      }
     }
-  }, [challenge.correctAnswer, feedback, gameMode]);
+    // incorrecto: siempre espera toque manual
+  }, [challenge.correctAnswer, feedback]);
 
   const handleSkip = useCallback(() => {
     if (answeredRef.current || feedback) return;
@@ -209,30 +198,26 @@ const MathChallenge = ({ challenge, level, gameMode, mathTimerSeconds = 10, show
           <div className="flex flex-col items-center gap-2">
             <p className="text-red-500 animate-pop-in">❌ Era {challenge.correctAnswer}</p>
             <SpeechBubble message={generateMathExplanation(challenge)} variant="math" />
-            {gameMode === 'practice_math' && (
-              <button
-                className="mt-2 btn-candy px-6 py-2.5 text-white rounded-2xl font-black text-base"
-                style={{ background: '#60A5FA', '--btn-shadow-color': '#2563eb', touchAction: 'manipulation' }}
-                onClick={() => onAnswerRef.current(feedback.selected)}
-              >
-                Siguiente →
-              </button>
-            )}
+            <button
+              className="mt-2 btn-candy px-6 py-2.5 text-white rounded-2xl font-black text-base"
+              style={{ background: '#60A5FA', '--btn-shadow-color': '#2563eb', touchAction: 'manipulation' }}
+              onClick={() => onAnswerRef.current(feedback.selected)}
+            >
+              Siguiente →
+            </button>
           </div>
         )}
         {feedback && feedback.isTimeout && (
           <div className="flex flex-col items-center gap-2">
             <p className="text-red-500 animate-pop-in">⏰ ¡Tiempo! Era {challenge.correctAnswer}</p>
             <SpeechBubble message={generateMathExplanation(challenge)} variant="math" />
-            {gameMode === 'practice_math' && (
-              <button
-                className="mt-2 btn-candy px-6 py-2.5 text-white rounded-2xl font-black text-base"
-                style={{ background: '#60A5FA', '--btn-shadow-color': '#2563eb', touchAction: 'manipulation' }}
-                onClick={() => onTimeoutRef.current()}
-              >
-                Siguiente →
-              </button>
-            )}
+            <button
+              className="mt-2 btn-candy px-6 py-2.5 text-white rounded-2xl font-black text-base"
+              style={{ background: '#60A5FA', '--btn-shadow-color': '#2563eb', touchAction: 'manipulation' }}
+              onClick={() => onTimeoutRef.current()}
+            >
+              Siguiente →
+            </button>
           </div>
         )}
       </div>
