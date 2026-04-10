@@ -107,8 +107,27 @@ const RANDOM_RECIPE_NAMES = [
 ];
 
 /**
+ * Calcula la cantidad de ingredientes para un nivel aleatorio (6+).
+ * Progresión gradual:
+ *   Nivel  6-8  → 3 ingredientes
+ *   Nivel  9-12 → 4 ingredientes
+ *   Nivel 13-17 → 5 ingredientes
+ *   Nivel 18-23 → 6 ingredientes
+ *   Nivel 24+   → 7 ingredientes
+ * @param {number} level
+ * @returns {number}
+ */
+function ingredientCountForLevel(level) {
+  if (level <= 8)  return 3;
+  if (level <= 12) return 4;
+  if (level <= 17) return 5;
+  if (level <= 23) return 6;
+  return 7;
+}
+
+/**
  * Genera una receta aleatoria para niveles 6+.
- * Selecciona entre 5 y 7 ingredientes únicos del pool, con 10s de tiempo.
+ * La cantidad de ingredientes escala gradualmente con el nivel.
  * Garantiza que los ingredientes no sean idénticos a los de la receta anterior.
  *
  * @param {number} level - Nivel actual (debe ser >= 6)
@@ -126,7 +145,7 @@ export function generateRandomRecipe(level, previousRecipe) {
   const maxAttempts = 100;
 
   do {
-    const count = 5 + Math.floor(Math.random() * 3); // 5, 6, or 7
+    const count = ingredientCountForLevel(level);
     const shuffled = shuffleArray(allEmojis);
     ingredients = shuffled.slice(0, count);
     attempts++;

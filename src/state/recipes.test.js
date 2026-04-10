@@ -102,11 +102,21 @@ describe('shuffleArray', () => {
 });
 
 describe('generateRandomRecipe', () => {
-  it('generates recipe with 5-7 ingredients for level 6+', () => {
-    for (let i = 0; i < 20; i++) {
+  it('generates recipe with 3-7 ingredients depending on level', () => {
+    // Nivel 6-8 → 3 ingredientes
+    for (let i = 0; i < 10; i++) {
       const recipe = generateRandomRecipe(6, null);
-      expect(recipe.ingredients.length).toBeGreaterThanOrEqual(5);
-      expect(recipe.ingredients.length).toBeLessThanOrEqual(7);
+      expect(recipe.ingredients).toHaveLength(3);
+    }
+    // Nivel 9-12 → 4 ingredientes
+    for (let i = 0; i < 10; i++) {
+      const recipe = generateRandomRecipe(10, null);
+      expect(recipe.ingredients).toHaveLength(4);
+    }
+    // Nivel 24+ → 7 ingredientes
+    for (let i = 0; i < 10; i++) {
+      const recipe = generateRandomRecipe(25, null);
+      expect(recipe.ingredients).toHaveLength(7);
     }
   });
 
