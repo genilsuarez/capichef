@@ -127,21 +127,38 @@ const ConfigPanel = ({ config, onSave, onClose, isOpen }) => {
           {/* Nivel avanzado */}
           <section>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">🎯 Nivel avanzado</h3>
-            <label className="flex items-center justify-between cursor-pointer py-0.5">
-              <div>
-                <span className="text-sm text-gray-700 font-medium">Ocultar nombres de ingredientes</span>
-                <p className="text-[11px] text-gray-400 mt-0.5">Solo se ven los emojis, sin texto</p>
-              </div>
-              <button
-                role="switch"
-                aria-checked={localConfig.hideIngredientNames ?? false}
-                onClick={() => updateField('hideIngredientNames', !(localConfig.hideIngredientNames ?? false))}
-                className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ml-3 ${localConfig.hideIngredientNames ? 'bg-purple-500' : 'bg-gray-300'}`}
-                style={{ touchAction: 'manipulation' }}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${localConfig.hideIngredientNames ? 'translate-x-5' : 'translate-x-0'}`} />
-              </button>
-            </label>
+            <div className="space-y-2">
+              <label className="flex items-center justify-between cursor-pointer py-0.5">
+                <div>
+                  <span className="text-sm text-gray-700 font-medium">Ocultar nombres de ingredientes</span>
+                  <p className="text-[11px] text-gray-400 mt-0.5">Solo se ven los emojis, sin texto</p>
+                </div>
+                <button
+                  role="switch"
+                  aria-checked={localConfig.hideIngredientNames ?? false}
+                  onClick={() => updateField('hideIngredientNames', !(localConfig.hideIngredientNames ?? false))}
+                  className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ml-3 ${localConfig.hideIngredientNames ? 'bg-purple-500' : 'bg-gray-300'}`}
+                  style={{ touchAction: 'manipulation' }}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${localConfig.hideIngredientNames ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </label>
+              <label className="flex items-center justify-between cursor-pointer py-0.5">
+                <div>
+                  <span className="text-sm text-gray-700 font-medium">Ocultar guía de receta</span>
+                  <p className="text-[11px] text-gray-400 mt-0.5">Memoriza el orden sin ayuda visual</p>
+                </div>
+                <button
+                  role="switch"
+                  aria-checked={localConfig.hideRecipeGuide ?? false}
+                  onClick={() => updateField('hideRecipeGuide', !(localConfig.hideRecipeGuide ?? false))}
+                  className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ml-3 ${localConfig.hideRecipeGuide ? 'bg-purple-500' : 'bg-gray-300'}`}
+                  style={{ touchAction: 'manipulation' }}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${localConfig.hideRecipeGuide ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </label>
+            </div>
           </section>
 
           {/* Operaciones matemáticas */}

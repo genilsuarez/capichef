@@ -511,15 +511,15 @@ body.gameplay-active {
    Gameplay Layout — sin scroll, todo en pantalla
    ============================================ */
 
-/* Capibara: más pequeño en móvil, normal en desktop */
+/* Capibara: escala con el espacio disponible en móvil */
 .capi-size {
-  font-size: clamp(2.5rem, 10vw, 4rem);
+  font-size: clamp(2rem, 9vw, 3.5rem);
   line-height: 1;
 }
 
 @media (min-width: 640px) {
   .capi-size {
-    font-size: 4rem; /* text-6xl */
+    font-size: 4rem;
   }
 }
 
@@ -533,21 +533,30 @@ body.gameplay-active {
 
 .gameplay-content {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  /* gap comprimido en móvil, normal en desktop */
-  gap: 0.375rem;
-  padding: 0.375rem 0.5rem 0.5rem;
-  justify-content: space-evenly;
+  gap: 6px;
+  padding: 4px 6px 6px;
+}
+
+/* El capibara cede espacio si la pantalla es pequeña */
+.gameplay-content > :first-child {
+  flex-shrink: 1;
+  min-height: 0;
+}
+
+/* RecipePanel e IngredientPanel no se comprimen */
+.gameplay-content > :not(:first-child) {
+  flex-shrink: 0;
 }
 
 @media (min-width: 640px) {
   .gameplay-content {
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    justify-content: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
   }
 }
 

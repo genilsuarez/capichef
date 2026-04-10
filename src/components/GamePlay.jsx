@@ -86,6 +86,7 @@ const GamePlay = ({ gameState, gameDispatch, selectedSkin = 'classic', config = 
             timeRemaining={showAnnounce ? currentRecipe.time * 10 : timeRemaining}
             totalTime={currentRecipe.time}
             errorsInCurrentDish={errorsInCurrentDish} maxErrors={maxErrors}
+            hideGuide={config.hideRecipeGuide ?? false}
           />
         )}
 

@@ -31,15 +31,15 @@ const Capibara = ({ state = 'idle', skin = 'classic', speechBubble = null, hideS
   const capiEmoji = skinDef ? skinDef.emoji : '🦫';
 
   return (
-    <div className="flex flex-col items-center gap-0.5 relative" aria-label={`Capibara: ${config.text}`}>
+    <div className="flex flex-col items-center gap-0 relative" aria-label={`Capibara: ${config.text}`}>
       {/* Speech bubble */}
       {speechBubble && (
         <div
-          className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white
-                     text-xs px-3 py-1.5 rounded-2xl shadow-md font-bold text-amber-800
+          className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white
+                     text-xs px-2.5 py-1 rounded-2xl shadow-md font-bold text-amber-800
                      whitespace-nowrap animate-pop-in z-10
                      after:content-[''] after:absolute after:top-full after:left-1/2
-                     after:-translate-x-1/2 after:border-[6px] after:border-transparent
+                     after:-translate-x-1/2 after:border-[5px] after:border-transparent
                      after:border-t-white"
           role="status"
         >
@@ -50,7 +50,7 @@ const Capibara = ({ state = 'idle', skin = 'classic', speechBubble = null, hideS
       {/* Capibara + accessory */}
       <div className="relative inline-flex items-end justify-center">
         <span
-          className="absolute -top-3 left-1/2 -translate-x-1/2 text-xl sm:text-3xl z-10 animate-float"
+          className="absolute -top-2 left-1/2 -translate-x-1/2 text-lg sm:text-3xl z-10 animate-float"
           aria-hidden="true"
           style={{ animationDelay: '0.3s' }}
         >
@@ -67,12 +67,11 @@ const Capibara = ({ state = 'idle', skin = 'classic', speechBubble = null, hideS
 
       {/* Sparkles for 'done' state */}
       {state === 'done' && (
-        <span className="text-base animate-pop-in" aria-hidden="true">✨🎉✨</span>
+        <span className="text-sm animate-pop-in leading-none" aria-hidden="true">✨🎉✨</span>
       )}
 
-      {/* State text — solo en pantallas no-gameplay (hideStateText=false por defecto fuera del juego) */}
       {!hideStateText && (
-        <p className="text-xs font-bold text-amber-600">
+        <p className="text-xs font-bold text-amber-600 leading-tight">
           {config.text}
         </p>
       )}

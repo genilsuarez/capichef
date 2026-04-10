@@ -51,7 +51,7 @@ const IngredientPanel = ({
   );
 
   return (
-    <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 gap-1.5 sm:gap-2 px-2 sm:px-4 w-full"
+    <div className="grid grid-cols-5 sm:grid-cols-5 md:grid-cols-5 gap-1.5 sm:gap-2 px-1 sm:px-4 w-full"
          role="group" aria-label="Panel de ingredientes">
       {visibleIngredients.map((ingredient) => {
         const name = getIngredientName(ingredient);
@@ -68,7 +68,7 @@ const IngredientPanel = ({
             className={`
               relative flex flex-col items-center justify-center gap-0.5
               min-h-[56px] sm:min-h-[64px] w-full py-1.5 sm:py-2
-              text-2xl sm:text-4xl
+              text-xl sm:text-4xl
               rounded-xl sm:rounded-2xl bg-white border-2 border-amber-100
               cursor-pointer select-none shadow-sm
               transition-all duration-150 ease-out

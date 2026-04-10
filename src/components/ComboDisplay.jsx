@@ -13,13 +13,13 @@ const ComboDisplay = ({ combo, milestone }) => {
     milestone === 10 ? '👑 ¡Leyenda!' : null;
 
   return (
-    <div aria-live="polite" className="flex flex-col items-center gap-1 select-none">
-      <span className="animate-pop-in inline-block rounded-full bg-amber-100 border-2 border-amber-300 px-4 py-1 text-base sm:text-lg font-black text-amber-800 shadow-sm"
+    <div aria-live="polite" className="flex items-center gap-1.5 select-none">
+      <span className="animate-pop-in inline-block rounded-full bg-amber-100 border-2 border-amber-300 px-3 py-0.5 text-sm font-black text-amber-800 shadow-sm"
             key={combo}>
         🔥 ×{multiplier} COMBO!
       </span>
       {milestoneMessage && (
-        <span className="animate-pop-in text-sm font-black text-amber-600" key={`milestone-${milestone}`}>
+        <span className="animate-pop-in text-xs font-black text-amber-600" key={`milestone-${milestone}`}>
           {milestoneMessage}
         </span>
       )}

@@ -22,6 +22,7 @@ export const DEFAULT_CONFIG = {
   mathMaxTable: 10,
   mathTimerSeconds: 30,
   hideIngredientNames: false,
+  hideRecipeGuide: false,
   textLarge: false,
   highContrast: false,
   reducedAnimations: false,
