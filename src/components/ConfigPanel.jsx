@@ -164,6 +164,36 @@ const ConfigPanel = ({ config, onSave, onClose, isOpen }) => {
           {/* Operaciones matemáticas */}
           <section>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Operaciones matemáticas</h3>
+
+            {/* Nivel matemático */}
+            <div className="flex gap-1.5 mb-2">
+              {[
+                { value: 'kids',  label: '🧒 Niños',       desc: 'Hasta 20' },
+                { value: 'teen',  label: '🧑 Adolescente',  desc: '+100' },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  className={`flex-1 py-1.5 rounded-lg text-sm font-bold transition-all flex flex-col items-center
+                    ${(localConfig.mathLevel ?? 'kids') === opt.value
+                      ? 'bg-indigo-500 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                  onClick={() => updateField('mathLevel', opt.value)}
+                  aria-pressed={(localConfig.mathLevel ?? 'kids') === opt.value}
+                  style={{ touchAction: 'manipulation', userSelect: 'none' }}
+                >
+                  <span>{opt.label}</span>
+                  <span className="text-[10px] opacity-75">{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Descripción del nivel teen */}
+            {(localConfig.mathLevel ?? 'kids') === 'teen' && (
+              <p className="text-xs text-indigo-700 bg-indigo-50 rounded-lg px-2 py-1 mb-2">
+                Multiplicaciones &gt;100 y sumas de 3 cifras. Los límites de abajo se ignoran.
+              </p>
+            )}
+
             <div className="flex gap-1.5 mb-2">
               {MATH_OPS_OPTIONS.map((opt) => {
                 const active = (localConfig.mathOps ?? []).includes(opt.value);
@@ -193,8 +223,9 @@ const ConfigPanel = ({ config, onSave, onClose, isOpen }) => {
               })}
             </div>
 
-            {/* Controles de límite — en fila si ambos visibles */}
-            {((localConfig.mathOps ?? []).some(op => op === 'addition' || op === 'subtraction') ||
+            {/* Controles de límite — solo en modo kids */}
+            {(localConfig.mathLevel ?? 'kids') === 'kids' &&
+             ((localConfig.mathOps ?? []).some(op => op === 'addition' || op === 'subtraction') ||
               (localConfig.mathOps ?? []).includes('multiplication')) && (
               <div className="flex gap-1.5">
                 {(localConfig.mathOps ?? []).some(op => op === 'addition' || op === 'subtraction') && (

@@ -39,8 +39,7 @@ export function getMathNarrative(operation) {
 
 /**
  * Genera 2 opciones incorrectas cercanas al resultado correcto.
- * Las opciones están en el rango [correctAnswer - 5, correctAnswer + 5],
- * sin negativos, sin duplicados y sin incluir la respuesta correcta.
+ * El offset escala con la magnitud del resultado para que sean plausibles.
  *
  * @param {number} correctAnswer - La respuesta correcta del desafío
  * @returns {number[]} Array de 2 opciones incorrectas
@@ -50,8 +49,12 @@ export function generateWrongOptions(correctAnswer) {
   let attempts = 0;
   const maxAttempts = 100;
 
+  // Offset proporcional: pequeño para resultados bajos, mayor para resultados grandes
+  const maxOffset = correctAnswer >= 100 ? 50 : correctAnswer >= 20 ? 15 : 5;
+  const minOffset = correctAnswer >= 100 ? 10 : 1;
+
   while (options.size < 2 && attempts < maxAttempts) {
-    const offset = randomInt(1, 5) * (Math.random() < 0.5 ? -1 : 1);
+    const offset = randomInt(minOffset, maxOffset) * (Math.random() < 0.5 ? -1 : 1);
     const candidate = correctAnswer + offset;
 
     if (candidate >= 0 && candidate !== correctAnswer && !options.has(candidate)) {
@@ -60,8 +63,8 @@ export function generateWrongOptions(correctAnswer) {
     attempts++;
   }
 
-  // Fallback: si no se generaron suficientes opciones (ej: correctAnswer muy bajo)
-  let fallback = 1;
+  // Fallback
+  let fallback = minOffset;
   while (options.size < 2) {
     const candidate = correctAnswer + fallback;
     if (candidate >= 0 && candidate !== correctAnswer && !options.has(candidate)) {
@@ -176,23 +179,69 @@ function generateByOps(mathOps, mathMaxValue, mathMaxTable) {
   return generateMultiplication(1, mathMaxTable);
 }
 
+// ── Modo adolescente ──────────────────────────────────────────────────────────
+
+/**
+ * Suma de 3 cifras: ambos operandos entre 100 y 999, resultado ≤ 1999.
+ */
+function generateTeenAddition() {
+  const a = randomInt(100, 999);
+  const b = randomInt(100, 999);
+  return { operand1: a, operand2: b, operation: '+', correctAnswer: a + b };
+}
+
+/**
+ * Resta de 3 cifras: resultado siempre ≥ 0.
+ */
+function generateTeenSubtraction() {
+  let a = randomInt(100, 999);
+  let b = randomInt(100, 999);
+  if (a < b) [a, b] = [b, a];
+  return { operand1: a, operand2: b, operation: '-', correctAnswer: a - b };
+}
+
+/**
+ * Multiplicación que garantiza resultado > 100.
+ * Operandos: uno entre 10-50, otro entre 3-20.
+ */
+function generateTeenMultiplication() {
+  let a, b, result;
+  do {
+    a = randomInt(10, 50);
+    b = randomInt(3, 20);
+    result = a * b;
+  } while (result <= 100);
+  return { operand1: a, operand2: b, operation: '×', correctAnswer: result };
+}
+
+/**
+ * Genera un desafío teen según las operaciones activas.
+ */
+function generateTeenByOps(mathOps) {
+  const ops = mathOps && mathOps.length > 0 ? mathOps : ['addition'];
+  const pick = ops[randomInt(0, ops.length - 1)];
+  if (pick === 'addition') return generateTeenAddition();
+  if (pick === 'subtraction') return generateTeenSubtraction();
+  return generateTeenMultiplication();
+}
+
 /**
  * Genera un desafío matemático completo escalado por nivel.
- * Usa mathOps (array de operaciones activas), mathMaxValue y mathMaxTable
- * para respetar la configuración del usuario.
- *
- * Si mathOps está vacío o no se pasa, usa la progresión por nivel por defecto.
+ * Usa mathOps (array de operaciones activas), mathMaxValue, mathMaxTable y mathLevel.
  *
  * @param {number} level - Nivel actual del juego (1-based)
  * @param {string[]} [mathOps] - Operaciones activas: ['addition','subtraction','multiplication']
- * @param {number} [mathMaxValue=20] - Valor máximo para sumas y restas
- * @param {number} [mathMaxTable=10] - Tabla máxima para multiplicaciones
+ * @param {number} [mathMaxValue=20] - Valor máximo para sumas y restas (modo kids)
+ * @param {number} [mathMaxTable=10] - Tabla máxima para multiplicaciones (modo kids)
+ * @param {'kids'|'teen'} [mathLevel='kids'] - Perfil de dificultad matemática
  * @returns {import('./recipes.js').MathChallenge}
  */
-export function generateMathChallenge(level, mathOps, mathMaxValue = 20, mathMaxTable = 10) {
+export function generateMathChallenge(level, mathOps, mathMaxValue = 20, mathMaxTable = 10, mathLevel = 'kids') {
   let base;
 
-  if (mathOps && mathOps.length > 0) {
+  if (mathLevel === 'teen') {
+    base = generateTeenByOps(mathOps);
+  } else if (mathOps && mathOps.length > 0) {
     base = generateByOps(mathOps, mathMaxValue, mathMaxTable);
   } else if (level <= 2) {
     base = generateAddition(1, Math.min(mathMaxValue, 10));

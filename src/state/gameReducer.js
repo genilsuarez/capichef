@@ -584,7 +584,8 @@ export function gameReducer(state, action) {
       const mathOps = cfg.mathOps && cfg.mathOps.length > 0 ? cfg.mathOps : undefined;
       const mathMaxValue = cfg.mathMaxValue ?? 20;
       const mathMaxTable = cfg.mathMaxTable ?? 10;
-      const challenge = generateMathChallenge(state.level, mathOps, mathMaxValue, mathMaxTable);
+      const mathLevel = cfg.mathLevel ?? 'kids';
+      const challenge = generateMathChallenge(state.level, mathOps, mathMaxValue, mathMaxTable, mathLevel);
       return {
         ...state,
         screen: 'mathChallenge',

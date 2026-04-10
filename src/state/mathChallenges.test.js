@@ -56,12 +56,14 @@ describe('generateWrongOptions', () => {
     }
   });
 
-  it('options are close to correct answer (within ±5 or reasonable fallback)', () => {
+  it('options are within a reasonable range of the correct answer', () => {
     for (let i = 0; i < 30; i++) {
       const correct = 10 + Math.floor(Math.random() * 40);
       const options = generateWrongOptions(correct);
       for (const opt of options) {
-        expect(Math.abs(opt - correct)).toBeLessThanOrEqual(5);
+        // Para resultados < 20: offset ≤ 5; para resultados ≥ 20: offset ≤ 15
+        const maxExpected = correct >= 20 ? 15 : 5;
+        expect(Math.abs(opt - correct)).toBeLessThanOrEqual(maxExpected);
       }
     }
   });

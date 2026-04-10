@@ -21,6 +21,7 @@ export const DEFAULT_CONFIG = {
   mathMaxValue: 20,
   mathMaxTable: 10,
   mathTimerSeconds: 30,
+  mathLevel: 'kids',
   hideIngredientNames: false,
   hideRecipeGuide: false,
   textLarge: false,
