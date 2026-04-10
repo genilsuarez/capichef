@@ -39,7 +39,9 @@ export function getMathNarrative(operation) {
 
 /**
  * Genera 2 opciones incorrectas cercanas al resultado correcto.
- * El offset escala con la magnitud del resultado para que sean plausibles.
+ * - Para resultados >= 100: las opciones comparten la última cifra con la correcta,
+ *   haciendo imposible eliminar por unidades. Offset en decenas (±10, ±20... ±50).
+ * - Para resultados < 100: offset proporcional a la magnitud.
  *
  * @param {number} correctAnswer - La respuesta correcta del desafío
  * @returns {number[]} Array de 2 opciones incorrectas
@@ -47,30 +49,56 @@ export function getMathNarrative(operation) {
 export function generateWrongOptions(correctAnswer) {
   const options = new Set();
   let attempts = 0;
-  const maxAttempts = 100;
+  const maxAttempts = 200;
 
-  // Offset proporcional: pequeño para resultados bajos, mayor para resultados grandes
-  const maxOffset = correctAnswer >= 100 ? 50 : correctAnswer >= 20 ? 15 : 5;
-  const minOffset = correctAnswer >= 100 ? 10 : 1;
+  if (correctAnswer >= 100) {
+    // Opciones que comparten la última cifra — solo varían en decenas/centenas
+    const lastDigit = correctAnswer % 10;
+    const offsets = [-50, -40, -30, -20, 20, 30, 40, 50];
+    // Shuffle offsets para variedad
+    const shuffled = offsets.sort(() => Math.random() - 0.5);
 
-  while (options.size < 2 && attempts < maxAttempts) {
-    const offset = randomInt(minOffset, maxOffset) * (Math.random() < 0.5 ? -1 : 1);
-    const candidate = correctAnswer + offset;
-
-    if (candidate >= 0 && candidate !== correctAnswer && !options.has(candidate)) {
-      options.add(candidate);
+    for (const offset of shuffled) {
+      if (options.size >= 2) break;
+      const candidate = correctAnswer + offset;
+      // Ajustar para que la última cifra coincida
+      const adjustedLastDigit = candidate % 10;
+      const diff = lastDigit - adjustedLastDigit;
+      const adjusted = candidate + diff;
+      if (adjusted > 0 && adjusted !== correctAnswer && !options.has(adjusted)) {
+        options.add(adjusted);
+      }
     }
-    attempts++;
-  }
 
-  // Fallback
-  let fallback = minOffset;
-  while (options.size < 2) {
-    const candidate = correctAnswer + fallback;
-    if (candidate >= 0 && candidate !== correctAnswer && !options.has(candidate)) {
-      options.add(candidate);
+    // Fallback si no se llenó
+    let fallback = 10;
+    while (options.size < 2 && fallback <= 200) {
+      const candidate = correctAnswer + fallback;
+      const adj = candidate - (candidate % 10) + lastDigit;
+      if (adj > 0 && adj !== correctAnswer && !options.has(adj)) options.add(adj);
+      fallback += 10;
     }
-    fallback++;
+  } else {
+    // Resultados < 100: offset proporcional
+    const maxOffset = correctAnswer >= 20 ? 15 : 5;
+    const minOffset = correctAnswer >= 20 ? 3 : 1;
+
+    while (options.size < 2 && attempts < maxAttempts) {
+      const offset = randomInt(minOffset, maxOffset) * (Math.random() < 0.5 ? -1 : 1);
+      const candidate = correctAnswer + offset;
+      if (candidate >= 0 && candidate !== correctAnswer && !options.has(candidate)) {
+        options.add(candidate);
+      }
+      attempts++;
+    }
+
+    // Fallback
+    let fallback = minOffset;
+    while (options.size < 2) {
+      const candidate = correctAnswer + fallback;
+      if (candidate >= 0 && candidate !== correctAnswer && !options.has(candidate)) options.add(candidate);
+      fallback++;
+    }
   }
 
   return [...options];

@@ -61,9 +61,20 @@ describe('generateWrongOptions', () => {
       const correct = 10 + Math.floor(Math.random() * 40);
       const options = generateWrongOptions(correct);
       for (const opt of options) {
-        // Para resultados < 20: offset ≤ 5; para resultados ≥ 20: offset ≤ 15
         const maxExpected = correct >= 20 ? 15 : 5;
         expect(Math.abs(opt - correct)).toBeLessThanOrEqual(maxExpected);
+      }
+    }
+  });
+
+  it('options >= 100 share the last digit with the correct answer', () => {
+    for (let i = 0; i < 30; i++) {
+      const correct = 100 + Math.floor(Math.random() * 900);
+      const options = generateWrongOptions(correct);
+      for (const opt of options) {
+        expect(opt % 10).toBe(correct % 10);
+        expect(opt).not.toBe(correct);
+        expect(opt).toBeGreaterThan(0);
       }
     }
   });
