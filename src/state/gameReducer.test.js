@@ -163,7 +163,9 @@ describe('gameReducer', () => {
       expect(state.ingredientProgress).toBe(1);
       expect(state.capibaraState).toBe('cooking');
       expect(state.lastClickResult).toBe('correct');
-      expect(state.availableIngredients).not.toContain(expected);
+      // Ingrediente queda en el panel pero marcado como usado
+      expect(state.availableIngredients).toContain(expected);
+      expect(state.usedIngredients).toContain(expected);
       expect(state.consecutiveErrorsWithoutHit).toBe(0);
     });
 

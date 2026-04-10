@@ -102,6 +102,7 @@ export const initialState = {
   consecutiveErrorsWithoutHit: 0,
   timeRemaining: 0,
   availableIngredients: [],
+  usedIngredients: [],
   newIngredientsThisSession: [],
   newIngredientsForLevel: [],
   timeBonusApplied: 0,
@@ -193,6 +194,7 @@ function resetLevelWithoutLifeLoss(state) {
     errorsInCurrentDish: 0,
     consecutiveErrorsWithoutHit: 0,
     ingredientProgress: 0,
+    usedIngredients: [],
     timeRemaining: state.currentRecipe.time * 10,
     availableIngredients: prepareAvailableIngredients(state.currentRecipe),
     capibaraState: 'idle',
@@ -245,6 +247,7 @@ function loseLife(state) {
     errorsInCurrentDish: 0,
     consecutiveErrorsWithoutHit: 0,
     ingredientProgress: 0,
+    usedIngredients: [],
     timeRemaining: state.currentRecipe.time * 10,
     availableIngredients: prepareAvailableIngredients(state.currentRecipe),
     combo: 0,
@@ -337,6 +340,7 @@ function advanceToNextLevel(state) {
     consecutiveErrorsWithoutHit: 0,
     timeRemaining: recipe.time * 10,
     availableIngredients,
+    usedIngredients: [],
     newIngredientsThisSession: updatedSeen,
     newIngredientsForLevel: newOnes,
     timeBonusApplied: newTimeBonusApplied,
@@ -439,19 +443,9 @@ export function gameReducer(state, action) {
 
       if (isCorrect) {
         const newProgress = state.ingredientProgress + 1;
-        // Filtrar solo la primera ocurrencia del ingrediente clickeado
-        let removed = false;
-        const newAvailable = state.availableIngredients.filter((i) => {
-          if (!removed && i === clickedIngredient) { removed = true; return false; }
-          return true;
-        });
 
-        // Garantizar que todos los ingredientes pendientes estén en el panel
-        const remainingRecipeIngredients = state.currentRecipe.ingredients.slice(newProgress);
-        const missingIngredients = remainingRecipeIngredients.filter((ing) => !newAvailable.includes(ing));
-        if (missingIngredients.length > 0) {
-          newAvailable.push(...missingIngredients);
-        }
+        // Marcar como usado (no eliminar del panel — se muestra en gris)
+        const newUsed = [...(state.usedIngredients || []), clickedIngredient];
 
         const isRecipeComplete = newProgress >= state.currentRecipe.ingredients.length;
 
@@ -479,7 +473,7 @@ export function gameReducer(state, action) {
             ...state,
             screen: 'levelComplete',
             ingredientProgress: newProgress,
-            availableIngredients: newAvailable,
+            usedIngredients: newUsed,
             capibaraState: 'done',
             lastClickResult: 'correct',
             lastClickedIngredient: clickedIngredient,
@@ -497,7 +491,7 @@ export function gameReducer(state, action) {
         return {
           ...state,
           ingredientProgress: newProgress,
-          availableIngredients: newAvailable,
+          usedIngredients: newUsed,
           capibaraState: 'cooking',
           lastClickResult: 'correct',
           lastClickedIngredient: clickedIngredient,

@@ -16,6 +16,7 @@ const GamePlay = ({ gameState, gameDispatch, selectedSkin = 'classic', config = 
     capibaraState, lastClickResult, lastClickedIngredient, combo,
     currentComboMilestone, speechBubbleMessage, newIngredientsForLevel,
     consecutiveErrorsWithoutHit, timePenaltySeconds, screenBeforePause,
+    usedIngredients,
   } = gameState;
 
   // Mostrar anuncio de receta al inicio de cada nivel nuevo
@@ -89,6 +90,7 @@ const GamePlay = ({ gameState, gameDispatch, selectedSkin = 'classic', config = 
 
         <IngredientPanel
           availableIngredients={availableIngredients}
+          usedIngredients={usedIngredients || []}
           onIngredientClick={handleIngredientClick}
           lastClickResult={lastClickResult}
           lastClickedIngredient={lastClickedIngredient}
