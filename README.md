@@ -4,7 +4,7 @@
 
 **Público:** Niños 4–10 años &nbsp;·&nbsp; **Idioma:** Español &nbsp;·&nbsp; **Plataforma:** Web (móvil y escritorio)
 
-🔗 **[Jugar ahora →](https://gsphome.github.io/capichef/)**
+🔗 **[Jugar ahora →](https://genilsuarez.github.io/capichef/)**
 
 ---
 
@@ -69,4 +69,4 @@ npm run preview      # Preview del build local
 
 ## Licencia
 
-MIT © [gsphome](https://github.com/gsphome)
+MIT © [genilsuarez](https://github.com/genilsuarez)
