@@ -12,8 +12,8 @@ import { colors, log, logSuccess, logError, logWarning } from './utils/logger.js
 const __filename = fileURLToPath(import.meta.url);
 const rootDir = dirname(dirname(__filename));
 
-const PAGES_URL = 'https://gsphome.github.io/capichef/';
-const REPO = 'gsphome/capichef';
+const PAGES_URL = 'https://genilsuarez.github.io/capichef/';
+const REPO = 'genilsuarez/capichef';
 
 /** Ejecuta un comando silencioso, retorna true/false */
 function run(cmd, label) {
