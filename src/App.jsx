@@ -436,6 +436,7 @@ const App = () => {
       case 'mathChallenge':
         return state.currentMathChallenge ? (
           <MathChallengeComponent
+            key={state.mathChallengesTotal}
             challenge={state.currentMathChallenge}
             level={state.level}
             gameMode={state.gameMode || 'classic'}
