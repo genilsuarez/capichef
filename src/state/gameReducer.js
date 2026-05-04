@@ -607,6 +607,11 @@ export function gameReducer(state, action) {
     }
 
     case 'SHOW_MATH': {
+      // Practice (recipe) mode: skip math and go straight to next level
+      if (state.gameMode === 'practice') {
+        return advanceToNextLevel(state);
+      }
+
       const cfg = state._config || {};
       const mathOps = cfg.mathOps && cfg.mathOps.length > 0 ? cfg.mathOps : undefined;
       const mathMaxValue = cfg.mathMaxValue ?? 20;
