@@ -24,13 +24,13 @@ import GamePlay from './components/GamePlay';
 import LevelComplete from './components/LevelComplete';
 import GameOver from './components/GameOver';
 import MathChallengeComponent from './components/MathChallenge';
+import MatchingChallengeComponent from './components/MatchingChallenge';
 import ConfigPanel from './components/ConfigPanel';
 import ProfilePanel from './components/ProfilePanel';
 import OnboardingScreen from './components/OnboardingScreen';
 import AchievementsPanel from './components/AchievementsPanel';
 import AchievementToast from './components/AchievementToast';
 import PauseOverlay from './components/PauseOverlay';
-
 import TutorialModal from './components/TutorialModal';
 
 const App = () => {
@@ -41,28 +41,18 @@ const App = () => {
   const [tutorialModalOpen, setTutorialModalOpen] = useState(false);
   const [achievementsPanelOpen, setAchievementsPanelOpen] = useState(false);
 
-  // Evaluate achievements after game state changes
   useAchievements(state, appState, appDispatch);
-
-  // Haptic feedback (vibration) — watches gameState for clicks, lives, achievements
   useHaptics(state);
 
-  // Bridge: when appState unlocks a new achievement, add it to gameState.pendingAchievements for the toast queue
   const prevUnlockedRef = useRef(appState.profile.unlockedAchievements);
-
-  // Track whether we've already saved a history entry for the current game session
   const historySavedRef = useRef(false);
 
-  // Reset historySaved flag when a new game starts
   useEffect(() => {
     if (state.screen === 'playing' && state.level === 1) {
       historySavedRef.current = false;
     }
   }, [state.screen, state.level]);
 
-  /**
-   * Create a GameHistoryEntry from the current game state and save it.
-   */
   const saveGameToHistory = useCallback(() => {
     if (historySavedRef.current) return;
     historySavedRef.current = true;
@@ -86,26 +76,22 @@ const App = () => {
     appDispatch({ type: 'ADD_HISTORY_ENTRY', payload: entry });
     persistHistoryEntry(entry);
   }, [state.gameMode, state.level, state.coins, state.mathChallengesCorrect, state.mathChallengesTotal, state.bestCombo, state.dishesCompleted, state.gameStartTime, appDispatch]);
+
   useEffect(() => {
     const prev = prevUnlockedRef.current;
     const current = appState.profile.unlockedAchievements;
     if (current.length > prev.length) {
       const newIds = current.filter((id) => !prev.includes(id));
-      for (const id of newIds) {
-        dispatch({ type: 'ADD_PENDING_ACHIEVEMENT', payload: id });
-      }
-      // Persist profile immediately on unlock
+      for (const id of newIds) dispatch({ type: 'ADD_PENDING_ACHIEVEMENT', payload: id });
       saveProfile(appState.profile);
     }
     prevUnlockedRef.current = current;
   }, [appState.profile.unlockedAchievements]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Dismiss handler for achievement toast
   const handleDismissAchievement = useCallback(() => {
     dispatch({ type: 'DISMISS_ACHIEVEMENT' });
   }, []);
 
-  // Load persisted config and profile on mount
   useEffect(() => {
     const persistedConfig = loadConfig();
     appDispatch({ type: 'UPDATE_CONFIG', payload: persistedConfig });
@@ -114,7 +100,6 @@ const App = () => {
     const persistedHistory = loadHistory();
     const persistedSession = loadSession();
 
-    // Restaurar highScore y bestLevel en el gameReducer
     dispatch({ type: 'INIT_SESSION', payload: persistedSession });
 
     if (persistedProfile) {
@@ -129,7 +114,6 @@ const App = () => {
         },
       });
     } else if (persistedHistory.length > 0) {
-      // History exists but no profile — still load history
       appDispatch({
         type: 'LOAD_PERSISTED_STATE',
         payload: {
@@ -141,63 +125,44 @@ const App = () => {
     }
   }, []);
 
-  // Persistir highScore y bestLevel en localStorage cada vez que cambian
   useEffect(() => {
     if (state.highScore > 0 || state.bestLevel > 0) {
       saveSession({ highScore: state.highScore, bestLevel: state.bestLevel });
     }
   }, [state.highScore, state.bestLevel]);
 
-  // Timer: tick every 100ms when playing
   useEffect(() => {
     if (state.screen !== 'playing') return;
     if (state.timeRemaining <= 0) return;
-
-    const intervalId = setInterval(() => {
-      dispatch({ type: 'TIMER_TICK' });
-    }, 100);
-
+    const intervalId = setInterval(() => dispatch({ type: 'TIMER_TICK' }), 100);
     return () => clearInterval(intervalId);
   }, [state.screen, state.timeRemaining]);
 
-  // Dispatch TIME_UP when timer reaches 0 while playing
   useEffect(() => {
     if (state.screen === 'playing' && state.timeRemaining <= 0) {
       dispatch({ type: 'TIME_UP' });
     }
   }, [state.screen, state.timeRemaining]);
 
-  // Auto-pause on visibilitychange (mobile tab switch / screen lock)
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden && state.screen === 'playing') {
-        dispatch({ type: 'PAUSE_GAME' });
-      }
+      if (document.hidden && state.screen === 'playing') dispatch({ type: 'PAUSE_GAME' });
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [state.screen]);
 
-  // Auto-clear speech bubble after 2.5 seconds (Req 18.3)
   useEffect(() => {
     if (!state.speechBubbleMessage) return;
-    const timerId = setTimeout(() => {
-      dispatch({ type: 'SPEECH_BUBBLE_CLEAR' });
-    }, 2500);
+    const timerId = setTimeout(() => dispatch({ type: 'SPEECH_BUBBLE_CLEAR' }), 2500);
     return () => clearTimeout(timerId);
   }, [state.speechBubbleMessage]);
 
-  // Update historical stats and check skin unlocks on game over o al salir al menú
   useEffect(() => {
     const isEnding = state.screen === 'gameOver' || state.screen === 'start';
     if (!isEnding) return;
 
-    // Save game to history (solo en game over, no en cada vuelta al menú)
-    if (state.screen === 'gameOver') {
-      saveGameToHistory();
-    }
-
-    // Solo actualizar stats si hubo partida real (al menos 1 nivel jugado)
+    if (state.screen === 'gameOver') saveGameToHistory();
     if (!state.gameStartTime) return;
 
     const currentStats = appState.profile.stats;
@@ -213,79 +178,31 @@ const App = () => {
 
     appDispatch({ type: 'UPDATE_STATS', payload: updatedStats });
 
-    // Check skin unlocks
     const newSkins = [];
     const unlocked = appState.profile.unlockedSkins;
     const stats = updatedStats;
 
-    // Chef Mexicano — completar 1 plato
-    if (stats.totalDishes >= 1 && !unlocked.includes('mexican')) {
-      appDispatch({ type: 'UNLOCK_SKIN', payload: 'mexican' });
-      newSkins.push('mexican');
-    }
-    // Chef Japonés — jugar 2 partidas
-    if (stats.gamesPlayed >= 2 && !unlocked.includes('japanese')) {
-      appDispatch({ type: 'UNLOCK_SKIN', payload: 'japanese' });
-      newSkins.push('japanese');
-    }
-    // Chef Pirata — completar 5 platos
-    if (stats.totalDishes >= 5 && !unlocked.includes('pirate')) {
-      appDispatch({ type: 'UNLOCK_SKIN', payload: 'pirate' });
-      newSkins.push('pirate');
-    }
-    // Chef Vaquero — jugar 5 partidas
-    if (stats.gamesPlayed >= 5 && !unlocked.includes('cowboy')) {
-      appDispatch({ type: 'UNLOCK_SKIN', payload: 'cowboy' });
-      newSkins.push('cowboy');
-    }
-    // Chef Mago — acertar 10 matemáticas
-    if (stats.totalMathCorrect >= 10 && !unlocked.includes('wizard')) {
-      appDispatch({ type: 'UNLOCK_SKIN', payload: 'wizard' });
-      newSkins.push('wizard');
-    }
-    // Chef Espacial — llegar al nivel 10
-    if (state.level >= 10 && !unlocked.includes('space')) {
-      appDispatch({ type: 'UNLOCK_SKIN', payload: 'space' });
-      newSkins.push('space');
-    }
-    // Chef Ninja — combo x15
-    if (state.bestCombo >= 15 && !unlocked.includes('ninja')) {
-      appDispatch({ type: 'UNLOCK_SKIN', payload: 'ninja' });
-      newSkins.push('ninja');
-    }
-    // Chef Vikingo — llegar al nivel 20
-    if (state.level >= 20 && !unlocked.includes('viking')) {
-      appDispatch({ type: 'UNLOCK_SKIN', payload: 'viking' });
-      newSkins.push('viking');
-    }
-    // Chef Científico — 80% precisión en matemáticas con mínimo 20 intentos
-    if (
-      stats.totalMathTotal >= 20 &&
-      stats.totalMathCorrect / stats.totalMathTotal >= 0.8 &&
-      !unlocked.includes('scientist')
-    ) {
-      appDispatch({ type: 'UNLOCK_SKIN', payload: 'scientist' });
-      newSkins.push('scientist');
-    }
-    // Chef Legendario — 500 monedas totales
-    if (stats.totalCoins >= 500 && !unlocked.includes('legendary')) {
-      appDispatch({ type: 'UNLOCK_SKIN', payload: 'legendary' });
-      newSkins.push('legendary');
-    }
+    if (stats.totalDishes >= 1 && !unlocked.includes('mexican')) { appDispatch({ type: 'UNLOCK_SKIN', payload: 'mexican' }); newSkins.push('mexican'); }
+    if (stats.gamesPlayed >= 2 && !unlocked.includes('japanese')) { appDispatch({ type: 'UNLOCK_SKIN', payload: 'japanese' }); newSkins.push('japanese'); }
+    if (stats.totalDishes >= 5 && !unlocked.includes('pirate')) { appDispatch({ type: 'UNLOCK_SKIN', payload: 'pirate' }); newSkins.push('pirate'); }
+    if (stats.gamesPlayed >= 5 && !unlocked.includes('cowboy')) { appDispatch({ type: 'UNLOCK_SKIN', payload: 'cowboy' }); newSkins.push('cowboy'); }
+    if (stats.totalMathCorrect >= 10 && !unlocked.includes('wizard')) { appDispatch({ type: 'UNLOCK_SKIN', payload: 'wizard' }); newSkins.push('wizard'); }
+    if (state.level >= 10 && !unlocked.includes('space')) { appDispatch({ type: 'UNLOCK_SKIN', payload: 'space' }); newSkins.push('space'); }
+    if (state.bestCombo >= 15 && !unlocked.includes('ninja')) { appDispatch({ type: 'UNLOCK_SKIN', payload: 'ninja' }); newSkins.push('ninja'); }
+    if (state.level >= 20 && !unlocked.includes('viking')) { appDispatch({ type: 'UNLOCK_SKIN', payload: 'viking' }); newSkins.push('viking'); }
+    if (stats.totalMathTotal >= 20 && stats.totalMathCorrect / stats.totalMathTotal >= 0.8 && !unlocked.includes('scientist')) { appDispatch({ type: 'UNLOCK_SKIN', payload: 'scientist' }); newSkins.push('scientist'); }
+    if (stats.totalCoins >= 500 && !unlocked.includes('legendary')) { appDispatch({ type: 'UNLOCK_SKIN', payload: 'legendary' }); newSkins.push('legendary'); }
 
-    // Guardar profile actualizado
-    const updatedProfile = {
+    saveProfile({
       ...appState.profile,
       stats: updatedStats,
       unlockedSkins: [...new Set([...appState.profile.unlockedSkins, ...newSkins])],
-    };
-    saveProfile(updatedProfile);
+    });
   }, [state.screen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSaveConfig = (newConfig) => {
     appDispatch({ type: 'UPDATE_CONFIG', payload: newConfig });
     saveConfig(newConfig);
-    // No cerramos el panel — el autosave llama esto en cada cambio
   };
 
   const handleSkinChange = (skinId) => {
@@ -293,29 +210,21 @@ const App = () => {
     saveProfile({ ...appState.profile, selectedSkin: skinId });
   };
 
-  // Build dynamic CSS classes for accessibility
   const config = appState.config;
   const rootClasses = [
     config.textLarge ? 'text-large' : '',
     config.highContrast ? 'high-contrast' : '',
   ].filter(Boolean).join(' ');
 
-  const rootStyle = {
-    '--animation-speed-multiplier': config.reducedAnimations ? 2 : 1,
-  };
+  const rootStyle = { '--animation-speed-multiplier': config.reducedAnimations ? 2 : 1 };
 
-  // Toggle overflow:hidden on body during gameplay to prevent scroll on mobile (Req 17.9)
   useEffect(() => {
     const isGameplay = state.screen === 'playing' || state.screen === 'paused';
-    if (isGameplay) {
-      document.body.classList.add('gameplay-active');
-    } else {
-      document.body.classList.remove('gameplay-active');
-    }
+    if (isGameplay) document.body.classList.add('gameplay-active');
+    else document.body.classList.remove('gameplay-active');
     return () => document.body.classList.remove('gameplay-active');
   }, [state.screen]);
 
-  // Screen router
   const renderScreen = () => {
     switch (state.screen) {
       case 'onboarding':
@@ -323,21 +232,7 @@ const App = () => {
           <OnboardingScreen
             onComplete={(name) => {
               appDispatch({ type: 'COMPLETE_ONBOARDING', payload: name });
-              saveProfile({
-                name,
-                selectedSkin: 'classic',
-                unlockedSkins: ['classic'],
-                unlockedAchievements: [],
-                stats: {
-                  bestLevel: 0,
-                  totalCoins: 0,
-                  totalDishes: 0,
-                  totalMathCorrect: 0,
-                  totalMathTotal: 0,
-                  bestComboEver: 0,
-                  gamesPlayed: 0,
-                },
-              });
+              saveProfile({ name, selectedSkin: 'classic', unlockedSkins: ['classic'], unlockedAchievements: [], stats: { bestLevel: 0, totalCoins: 0, totalDishes: 0, totalMathCorrect: 0, totalMathTotal: 0, bestComboEver: 0, gamesPlayed: 0 } });
               dispatch({ type: 'RESTART' });
             }}
           />
@@ -347,21 +242,7 @@ const App = () => {
           <OnboardingScreen
             onComplete={(name) => {
               appDispatch({ type: 'COMPLETE_ONBOARDING', payload: name });
-              saveProfile({
-                name,
-                selectedSkin: 'classic',
-                unlockedSkins: ['classic'],
-                unlockedAchievements: [],
-                stats: {
-                  bestLevel: 0,
-                  totalCoins: 0,
-                  totalDishes: 0,
-                  totalMathCorrect: 0,
-                  totalMathTotal: 0,
-                  bestComboEver: 0,
-                  gamesPlayed: 0,
-                },
-              });
+              saveProfile({ name, selectedSkin: 'classic', unlockedSkins: ['classic'], unlockedAchievements: [], stats: { bestLevel: 0, totalCoins: 0, totalDishes: 0, totalMathCorrect: 0, totalMathTotal: 0, bestComboEver: 0, gamesPlayed: 0 } });
             }}
           />
         ) : (
@@ -378,23 +259,9 @@ const App = () => {
               onOpenTutorial={() => setTutorialModalOpen(true)}
               onOpenAchievements={null}
             />
-            <ConfigPanel
-              config={appState.config}
-              onSave={handleSaveConfig}
-              onClose={() => setConfigPanelOpen(false)}
-              isOpen={configPanelOpen}
-            />
-            <ProfilePanel
-              profile={appState.profile}
-              history={appState.history}
-              onClose={() => setProfilePanelOpen(false)}
-              onSkinChange={handleSkinChange}
-              isOpen={profilePanelOpen}
-            />
-            <TutorialModal
-              isOpen={tutorialModalOpen}
-              onClose={() => setTutorialModalOpen(false)}
-            />
+            <ConfigPanel config={appState.config} onSave={handleSaveConfig} onClose={() => setConfigPanelOpen(false)} isOpen={configPanelOpen} />
+            <ProfilePanel profile={appState.profile} history={appState.history} onClose={() => setProfilePanelOpen(false)} onSkinChange={handleSkinChange} isOpen={profilePanelOpen} />
+            <TutorialModal isOpen={tutorialModalOpen} onClose={() => setTutorialModalOpen(false)} />
           </>
         );
       case 'playing':
@@ -404,20 +271,14 @@ const App = () => {
             gameDispatch={dispatch}
             selectedSkin={appState.profile.selectedSkin}
             config={appState.config}
-            onExitToMenu={() => {
-              saveGameToHistory();
-              dispatch({ type: 'EXIT_TO_MENU' });
-            }}
+            onExitToMenu={() => { saveGameToHistory(); dispatch({ type: 'EXIT_TO_MENU' }); }}
           />
         );
       case 'paused':
         return (
           <PauseOverlay
             onResume={() => dispatch({ type: 'RESUME_GAME' })}
-            onExitToMenu={() => {
-              saveGameToHistory();
-              dispatch({ type: 'EXIT_TO_MENU' });
-            }}
+            onExitToMenu={() => { saveGameToHistory(); dispatch({ type: 'EXIT_TO_MENU' }); }}
             config={appState.config}
             onSaveConfig={handleSaveConfig}
           />
@@ -447,14 +308,21 @@ const App = () => {
             onAnswer={(answer) => dispatch({ type: 'ANSWER_MATH', payload: answer })}
             onTimeout={() => dispatch({ type: 'MATH_TIMEOUT' })}
             onSkip={() => dispatch({ type: 'MATH_SKIP' })}
-            onExitToMenu={() => {
-              saveGameToHistory();
-              dispatch({ type: 'EXIT_TO_MENU' });
-            }}
+            onExitToMenu={() => { saveGameToHistory(); dispatch({ type: 'EXIT_TO_MENU' }); }}
+          />
+        ) : null;
+      case 'matchingChallenge':
+        return state.currentMatchingChallenge ? (
+          <MatchingChallengeComponent
+            key={state.matchingChallengesCompleted}
+            challenge={state.currentMatchingChallenge}
+            level={state.level}
+            selectedSkin={appState.profile.selectedSkin}
+            onComplete={() => dispatch({ type: 'COMPLETE_MATCHING' })}
+            onExitToMenu={() => { saveGameToHistory(); dispatch({ type: 'EXIT_TO_MENU' }); }}
           />
         ) : null;
       case 'gameOver': {
-        // Get the previous game for comparison (index 1 because index 0 is the current game just saved)
         const previousGame = appState.history.length > 1 ? appState.history[1] : null;
         const mathAcc = state.mathChallengesTotal > 0
           ? Math.round((state.mathChallengesCorrect / state.mathChallengesTotal) * 100)
@@ -485,7 +353,6 @@ const App = () => {
     }
   };
 
-  // Resolve the first pending achievement to its full definition for the toast
   const pendingAchievementDef = state.pendingAchievements.length > 0
     ? ACHIEVEMENT_DEFINITIONS.find((a) => a.id === state.pendingAchievements[0]) || null
     : null;
@@ -494,10 +361,7 @@ const App = () => {
     <div className="app-shell-bg">
       <div className={`app-shell ${rootClasses || ''}`} style={rootStyle}>
         {renderScreen()}
-        <AchievementToast
-          achievement={pendingAchievementDef}
-          onDismiss={handleDismissAchievement}
-        />
+        <AchievementToast achievement={pendingAchievementDef} onDismiss={handleDismissAchievement} />
       </div>
     </div>
   );

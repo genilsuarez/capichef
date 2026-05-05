@@ -1,16 +1,5 @@
 /**
  * StartScreen — Pantalla de inicio de CapiChef.
- *
- * Rediseño v4: Consistencia con componentes reutilizables.
- * - Usa componente Capibara (con accesorio contextual) en vez de emoji directo
- * - Usa componente SpeechBubble en vez de div hardcodeado
- * - Score arriba a la derecha (principio #3: convención de juegos)
- * - Tab bar inferior con 4 iconos: Perfil, Inicio, Ajustes, Ayuda
- * - Contenedor centrado para web (app-shell en App.jsx)
- * - Sin menú hamburguesa — todo accesible desde el tab bar
- *
- * Inspirado en Lingokids, Khan Academy Kids (iconos grandes).
- * Ref: https://agentestudio.com/blog/best-practices-mobile-navigation-design
  */
 import { useState, useEffect } from 'react';
 import Capibara from './Capibara';
@@ -20,7 +9,6 @@ const StartScreen = ({ highScore, bestLevel = 0, totalCoins = 0, playerName, sel
   const [activeTab, setActiveTab] = useState('home');
   useEffect(() => { setMounted(true); }, []);
 
-  // Tab handler — home is default, others trigger their panels
   const handleTab = (tab) => {
     setActiveTab(tab);
     if (tab === 'profile' && onOpenProfile) onOpenProfile();
@@ -33,10 +21,10 @@ const StartScreen = ({ highScore, bestLevel = 0, totalCoins = 0, playerName, sel
   return (
     <div className="start-screen-root flex flex-col overflow-hidden">
 
-      {/* ── TARJETA CENTRAL — ocupa casi toda la pantalla ── */}
+      {/* ── TARJETA CENTRAL ── */}
       <div className="start-screen-card">
 
-        {/* Score — esquina superior derecha dentro de la tarjeta */}
+        {/* Score — esquina superior derecha */}
         <div className={`absolute top-3 right-3 flex items-center gap-1.5 transition-all duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
           {bestLevel > 0 && (
             <div className="flex items-center gap-1 bg-purple-100 rounded-2xl px-2.5 py-1">
@@ -46,10 +34,8 @@ const StartScreen = ({ highScore, bestLevel = 0, totalCoins = 0, playerName, sel
           )}
         </div>
 
-        {/* Character */}
         <Capibara state="idle" skin={selectedSkin} hideStateText />
 
-        {/* Logo + saludo */}
         <div className="text-center">
           <h1 className="text-6xl sm:text-7xl font-black tracking-tight" style={{ color: '#7C3AED' }}>
             CapiChef
@@ -61,7 +47,7 @@ const StartScreen = ({ highScore, bestLevel = 0, totalCoins = 0, playerName, sel
           )}
         </div>
 
-        {/* Monedas — destacado, grande, festivo */}
+        {/* Monedas */}
         <div
           className={`flex items-center justify-center gap-3 bg-amber-50 border-2 border-amber-200 rounded-3xl px-6 py-3 w-full max-w-xs transition-all duration-500 ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
           aria-label={`${totalCoins} monedas acumuladas`}
@@ -75,6 +61,7 @@ const StartScreen = ({ highScore, bestLevel = 0, totalCoins = 0, playerName, sel
 
         {/* Mode buttons */}
         <div className="flex flex-col gap-3 w-full max-w-xs mt-1">
+          {/* Main play button */}
           <button
             className="btn-candy w-full py-5 text-white text-2xl rounded-2xl flex items-center justify-center gap-3"
             style={{ background: '#16C60C', '--btn-shadow-color': '#0a7a06' }}
@@ -84,6 +71,7 @@ const StartScreen = ({ highScore, bestLevel = 0, totalCoins = 0, playerName, sel
             <span>¡A Jugar!</span>
           </button>
 
+          {/* Practice row: Recetas + Matemáticas */}
           <div className="flex gap-3">
             <button
               className="btn-candy flex-1 py-4 text-white rounded-2xl flex flex-col items-center gap-1.5"
@@ -104,6 +92,19 @@ const StartScreen = ({ highScore, bestLevel = 0, totalCoins = 0, playerName, sel
               <span className="text-[10px] opacity-80">Matemáticas</span>
             </button>
           </div>
+
+          {/* Practice Pairs — full width */}
+          <button
+            className="btn-candy w-full py-4 text-white rounded-2xl flex items-center justify-center gap-3"
+            style={{ background: '#F97316', '--btn-shadow-color': '#c2410c' }}
+            onClick={() => onStart('practice_matching')}
+          >
+            <span className="text-2xl">🔗</span>
+            <div className="flex flex-col items-start leading-tight">
+              <span className="text-base font-black">Práctica de Pares</span>
+              <span className="text-[11px] opacity-80">Une operaciones con su resultado</span>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -143,8 +144,6 @@ const StartScreen = ({ highScore, bestLevel = 0, totalCoins = 0, playerName, sel
               <span className="tab-bar-label font-bold">Ayuda</span>
             </button>
           )}
-
-          {onOpenAchievements && null}
         </div>
       </nav>
     </div>
